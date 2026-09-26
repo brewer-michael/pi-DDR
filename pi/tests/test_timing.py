@@ -1,7 +1,13 @@
 import random
 import unittest
 
-from piddr.timing import ChatterDetector, DelayStats, estimate_poll_interval, percentile
+from piddr.timing import (
+    ChatterDetector,
+    DelayStats,
+    describe_poll_estimate,
+    estimate_poll_interval,
+    percentile,
+)
 
 
 def stepping_reports(interval_ms, count=120, jitter_us=40, seed=1):
@@ -30,6 +36,24 @@ class PollEstimateTest(unittest.TestCase):
     def test_long_gaps_are_ignored(self):
         times = [i * 1.0 for i in range(50)]  # one report a second: nothing usable
         self.assertEqual(estimate_poll_interval(times).samples, 0)
+
+    def test_report_on_every_poll(self):
+        # A noisy axis can make a device report on every poll: all gaps equal.
+        for interval in (1.0, 8.0):
+            times = [10.0 + i * interval / 1000.0 for i in range(100)]
+            self.assertEqual(estimate_poll_interval(times).interval_ms, interval)
+
+    def test_noisy_timestamps_give_no_answer(self):
+        est = estimate_poll_interval(stepping_reports(1.0, count=200, jitter_us=250))
+        self.assertIsNone(est.interval_ms)
+        self.assertGreater(est.samples, 100)
+
+    def test_describe(self):
+        self.assertIn("1 ms grid", describe_poll_estimate(estimate_poll_interval(stepping_reports(1.0))))
+        few = estimate_poll_interval(stepping_reports(8.0, count=10))
+        self.assertIn("need more steps", describe_poll_estimate(few))
+        noisy = estimate_poll_interval(stepping_reports(1.0, count=200, jitter_us=250))
+        self.assertIn("no clear polling grid", describe_poll_estimate(noisy))
 
 
 class ChatterTest(unittest.TestCase):

@@ -10,10 +10,11 @@
 xset s off -dpms s noblank
 
 if [ -z "${OUTFOX_BIN:-}" ]; then
+    # The last match wins: with several versions unpacked, the sorted glob
+    # usually lists the newest last. Set OUTFOX_BIN to pin a version.
     for candidate in "$HOME"/ProjectOutFox/*/OutFox "$HOME"/OutFox*/OutFox; do
         if [ -x "$candidate" ]; then
             OUTFOX_BIN=$candidate
-            break
         fi
     done
 fi

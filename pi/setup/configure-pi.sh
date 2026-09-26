@@ -25,8 +25,19 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run) DRY_RUN=1 ;;
         --video)
+            if [ $# -lt 2 ]; then
+                echo "--video needs a mode, for example --video 1920x1080@60" >&2
+                exit 2
+            fi
             shift
-            VIDEO="${1:-}"
+            VIDEO=$1
+            case "$VIDEO" in
+                *x*@*) ;;
+                *)
+                    echo "--video expects WIDTHxHEIGHT@HZ, for example 1920x1080@60 (got '$VIDEO')" >&2
+                    exit 2
+                    ;;
+            esac
             ;;
         -h | --help)
             usage

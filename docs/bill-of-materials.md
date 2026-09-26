@@ -16,7 +16,7 @@ memory got more expensive.
 | Game computer | $145 (2 GB Pi) to $190 (4 GB Pi) | About $90 if you already own a Pi 4 |
 | Dance mats (2) | $50–80 | |
 | Platform (stage) | about $210 | Plus tools you may already have |
-| **Core total** | **about $415–480** | |
+| **Core total** | **about $405–480** | |
 | Safety bars (optional) | about $160 | Both modules |
 | Optical audio adapter | about $20 | Only if the receiver has no HDMI input |
 

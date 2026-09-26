@@ -1,12 +1,12 @@
 """Timing analysis for mat input: polling interval, chatter, delay stats."""
 
-import cmath
 import math
 from collections import deque, namedtuple
 
 # xHCI controllers (every USB-A port on a Pi 4) poll interrupt endpoints on
 # power-of-two intervals, so these are the only rates a mat can really get.
 CANDIDATE_INTERVALS_MS = (0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0)
+MIN_SAMPLES = 20
 
 PollEstimate = namedtuple("PollEstimate", "interval_ms samples coherence")
 
@@ -15,16 +15,18 @@ def estimate_poll_interval(
     report_times,
     candidates_ms=CANDIDATE_INTERVALS_MS,
     max_gap=0.5,
-    min_samples=20,
+    min_samples=MIN_SAMPLES,
     threshold=0.7,
 ):
     """Estimate how often the host really polls a device.
 
-    Reports can only arrive on polling slots, so the gaps between consecutive
-    reports are whole multiples of the polling interval. For each candidate
-    interval this measures how well the gaps line up with it (1.0 = perfect,
-    ~0 = random) and returns the largest candidate that lines up. It works
-    from ordinary stepping, with no test hardware.
+    Reports can only arrive on polling slots, so every gap between consecutive
+    reports is a whole number of polling intervals. For each candidate
+    interval this scores how close the gaps come to whole multiples of it
+    (the mean cosine of each gap's phase: 1.0 = all whole multiples, ~0 =
+    unrelated) and returns the largest candidate that scores well and is no
+    longer than the shortest gap. It works from ordinary stepping, with no
+    test hardware.
 
     Gaps longer than ``max_gap`` seconds are skipped: over long gaps the USB
     clock drifts against the system clock enough to blur a 1 ms grid.
@@ -35,17 +37,29 @@ def estimate_poll_interval(
     for p_ms in candidates_ms:
         period = p_ms / 1000.0
         if gaps:
-            total = sum(cmath.exp(2j * math.pi * gap / period) for gap in gaps)
-            coherence[p_ms] = abs(total) / len(gaps)
+            coherence[p_ms] = sum(math.cos(2 * math.pi * gap / period) for gap in gaps) / len(gaps)
         else:
             coherence[p_ms] = 0.0
     if len(gaps) < min_samples:
         return PollEstimate(None, len(gaps), coherence)
+    shortest = min(gaps)
     interval = None
     for p_ms in candidates_ms:
-        if coherence[p_ms] >= threshold:
+        period = p_ms / 1000.0
+        # Two reports are at least one poll apart, so the interval can't be
+        # longer than the shortest gap (allowing for timestamp jitter).
+        fits = period <= shortest + max(0.0001, 0.05 * period)
+        if fits and coherence[p_ms] >= threshold:
             interval = p_ms
     return PollEstimate(interval, len(gaps), coherence)
+
+
+def describe_poll_estimate(estimate, min_samples=MIN_SAMPLES):
+    if estimate.interval_ms is not None:
+        return f"reports land on a {estimate.interval_ms:g} ms grid ({estimate.samples} gaps)"
+    if estimate.samples < min_samples:
+        return f"need more steps ({estimate.samples} usable gaps, want {min_samples}+)"
+    return f"no clear polling grid in {estimate.samples} gaps (timestamps too uneven to tell)"
 
 
 class ChatterDetector:

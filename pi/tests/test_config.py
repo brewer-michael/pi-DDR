@@ -58,6 +58,7 @@ right = BTN_TOP
             "same port twice": MINIMAL + MINIMAL.replace("player1", "player2"),
             "no players": "[bridge]\nrelease_debounce_ms = 5\n",
             "bad number": "[bridge]\nrelease_debounce_ms = soon\n" + MINIMAL,
+            "input used twice": MINIMAL.replace("down = BTN_THUMB", "down = BTN_TRIGGER"),
         }
         for name, text in cases.items():
             with self.assertRaises(ConfigError, msg=name):
@@ -83,7 +84,8 @@ class UdevRulesTest(unittest.TestCase):
         rules = udev_rules([(0x0079, 0x0011), (0x12BA, 0x0100)])
         self.assertIn('ATTRS{idVendor}=="0079", ATTRS{idProduct}=="0011"', rules)
         self.assertIn('ATTRS{idVendor}=="12ba", ATTRS{idProduct}=="0100"', rules)
-        self.assertEqual(rules.count('MODE="0600", GROUP="root"'), 2)
+        # ":=" so Raspberry Pi OS's later 99-com.rules can't reopen them to the input group.
+        self.assertEqual(rules.count('MODE:="0600", GROUP:="root"'), 2)
         self.assertEqual(rules.count('TAG-="uaccess"'), 2)
         self.assertEqual(rules.count('ENV{ID_INPUT_JOYSTICK}=""'), 2)
 

@@ -132,7 +132,9 @@ class Mapper:
 
     def flush(self, now):
         """Return ``[(button_code, value)]`` to send for the current raw state."""
-        changes = []
+        # A held-back release whose window has passed is final, even if this
+        # report presses the arrow again: that press is a new step.
+        changes = self.expire(now)
         for control, sources in self._mapping.items():
             if any(self._active(s) for s in sources):
                 if self._pending.pop(control, None) is not None:

@@ -35,7 +35,7 @@ This is a DIY home dance-game (DDR-style) setup:
 
 ## Decisions made since (with the reasons)
 
-- **P1/P2 go through the pad bridge, not udev alone.** The StepMania 5.1 code OutFox grew from numbers pads by sorting `/sys/class/input/inputN` names as text, and it ignores udev symlinks. `pi/piddr/padbridge.py` creates the virtual pads "pi-DDR P1"/"P2" at boot and feeds each from a fixed USB port (`/dev/input/by-path`). A generated udev rule (65-pi-ddr-raw-mats.rules) hides the raw mats from the game. Don't replace this with symlink-only udev rules.
+- **P1/P2 go through the pad bridge, not udev alone.** The StepMania 5.1 code OutFox grew from numbers pads by sorting `/sys/class/input/inputN` names as text, and it ignores udev symlinks. `pi/piddr/padbridge.py` creates the virtual pads "pi-DDR P1"/"P2" at boot and feeds each from a fixed USB port (`/dev/input/by-path`). It runs as a `Type=notify` service and reports ready only after both pads exist, so the autologin that starts the game waits for them. A generated udev rule (65-pi-ddr-raw-mats.rules) hides the raw mats from the game. It must use `MODE:=`/`GROUP:=`, because Raspberry Pi OS's 99-com.rules later resets every input device to root:input 0660, and the default user is in `input`. Don't replace this with symlink-only udev rules.
 - **Virtual pad layout is a contract:** control `i` in `CONTROLS` (`pi/piddr/mapping.py`) is sent as `BTN_JOYSTICK + i`, which is joystick button `i+1` in the game. The pads also carry idle ABS_X/ABS_Y axes, because SM5.1's Linux input code ignores devices without an X axis. Changing either breaks users' OutFox key maps.
 - **Audio device:** OutFox `SoundDrivers=ALSA-sw`, `SoundDevice=hdmi:CARD=vc4hdmi0,DEV=0` (HDMI0 into the receiver's HDMI input; video passes through the receiver to the TV), `SoundPreferredSampleRate=48000`. No PipeWire or PulseAudio, which is why the setup uses Pi OS Lite with a bare X session (`pi/setup/xinitrc`) instead of a desktop.
 - **Mat polling:** `usbhid.jspoll=1` on the kernel command line. It only affects mats whose HID descriptor says Joystick (not Gamepad), and only when the device binds.
@@ -74,5 +74,5 @@ This is a DIY home dance-game (DDR-style) setup:
 
 - OutFox (current Pi build) still uses `ALSA-sw`/`SoundDevice`/`SoundPreferredSampleRate`, the SM5.1 input enumeration, and `VisualDelaySeconds` as described.
 - The pad bridge on a real Pi 4: uinput creation, ordering retry, forwarding delay numbers.
-- The udev rule actually hides the raw mats from the game user (`TAG-="uaccess"` and `ENV{ID_INPUT_JOYSTICK}=""` at priority 65).
+- The udev rule actually hides the raw mats from the game user (`MODE:="0600"`, `GROUP:="root"`, `TAG-="uaccess"` and `ENV{ID_INPUT_JOYSTICK}=""` at priority 65, surviving 99-com.rules).
 - The chosen mats report HID usage Joystick and can register LEFT+RIGHT jumps.

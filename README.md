@@ -17,7 +17,7 @@ A home DDR-style dance game for two players:
 
 | | |
 |---|---|
-| [Bill of materials](docs/bill-of-materials.md) | Everything to buy, with rough 2026 prices (about $415–480 for the core build). CSV copy: [`hardware/bom.csv`](hardware/bom.csv). |
+| [Bill of materials](docs/bill-of-materials.md) | Everything to buy, with rough 2026 prices (about $405–480 for the core build). CSV copy: [`hardware/bom.csv`](hardware/bom.csv). |
 | [Platform plans](docs/platform-plans.md) | The two-module stage that holds the mats: dimensions, formulas for your mat size, cut list, drawings, build steps, optional safety bars. |
 | [Latency and sync](docs/latency-and-sync.md) | How the game, the mats and the audio stay in sync, what to configure, how to calibrate, and troubleshooting. Includes the full Pi setup, in order. |
 

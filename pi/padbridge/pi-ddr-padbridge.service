@@ -2,13 +2,17 @@
 Description=pi-DDR pad bridge (two mats -> stable virtual pads P1/P2)
 After=systemd-udevd.service
 # The virtual pads must exist before the game starts from the tty1 autologin.
+# Type=notify makes that ordering real: the bridge reports ready only after
+# it has created both pads.
 Before=getty@tty1.service display-manager.service
 
 [Service]
-Type=simple
+Type=notify
 Environment=PYTHONPATH=/opt/pi-ddr PYTHONUNBUFFERED=1
 ExecStartPre=-/usr/sbin/modprobe uinput
 ExecStart=/usr/bin/python3 -m piddr.padbridge --config /etc/pi-ddr/padbridge.conf
+# Don't hold up the console login for long if something is badly wrong.
+TimeoutStartSec=20
 # Forward steps ahead of rendering and everything else. The loop sleeps in
 # select() between reports, so real-time priority costs almost nothing.
 CPUSchedulingPolicy=fifo

@@ -17,6 +17,7 @@ import glob
 import os
 import selectors
 import signal
+import socket
 import sys
 import time
 
@@ -48,6 +49,30 @@ def sorts_before(a, b):
     return a < b and _trailing_number(a) < _trailing_number(b)
 
 
+def notify_systemd(message=b"READY=1"):
+    """Tell systemd (Type=notify) the virtual pads exist. No-op outside systemd.
+
+    The unit orders the tty1 autologin that starts the game after this, and
+    OutFox only looks for pads when it starts.
+    """
+    address = os.environ.get("NOTIFY_SOCKET")
+    if not address:
+        return False
+    if address.startswith("@"):
+        address = "\0" + address[1:]
+    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as sock:
+        sock.connect(address)
+        sock.sendall(message)
+    return True
+
+
+def _close_quietly(dev):
+    try:
+        dev.close()
+    except OSError:
+        pass
+
+
 class Player:
     def __init__(self, config, pad, release_debounce):
         self.config = config
@@ -76,6 +101,7 @@ class Bridge:
         self.stop_requested = False
         self.stats_requested = False
         self._warned_ports = set()
+        self._last_links = None
 
     # -- virtual pads -------------------------------------------------------
 
@@ -134,15 +160,21 @@ class Bridge:
         try:
             dev.grab()
         except OSError as e:
-            dev.close()
+            _close_quietly(dev)
             self._note(player, f"cannot grab {path}: {e.strerror or e} (is matprobe running?)")
             return False
-        absinfo = dict(dev.capabilities(absinfo=True).get(evcodes.EV_ABS, []))
+        try:
+            absinfo = dict(dev.capabilities(absinfo=True).get(evcodes.EV_ABS, []))
+            keys = dev.active_keys()
+        except OSError as e:
+            _close_quietly(dev)
+            self._note(player, f"lost {path} while connecting: {e.strerror or e}")
+            return False
         player.mapper.set_abs_ranges({code: (info.min, info.max) for code, info in absinfo.items()})
         player.dev = dev
         player.dropped = False
         values = {code: info.value for code, info in absinfo.items()}
-        self._send(player, player.mapper.reset(dev.active_keys(), values, self.clock()))
+        self._send(player, player.mapper.reset(keys, values, self.clock()))
         self.selector.register(dev, selectors.EVENT_READ, player)
         info = dev.info
         self._note(player, f"mat connected: {dev.name!r} ({info.vendor:04x}:{info.product:04x}) at {path}")
@@ -156,10 +188,7 @@ class Bridge:
             self.selector.unregister(dev)
         except (KeyError, ValueError):
             pass
-        try:
-            dev.close()
-        except OSError:
-            pass
+        _close_quietly(dev)
         self._send(player, player.mapper.release_all())
         self._note(player, f"mat disconnected ({reason}); its arrows were released")
 
@@ -177,24 +206,31 @@ class Bridge:
             if ev.type == evcodes.EV_SYN:
                 if ev.code == evcodes.SYN_DROPPED:
                     player.dropped = True
-                elif ev.code == evcodes.SYN_REPORT:
-                    self._report(player, ev)
+                elif ev.code == evcodes.SYN_REPORT and not self._report(player, ev):
+                    return
             elif not player.dropped:
                 player.mapper.feed(ev.type, ev.code, ev.value)
 
     def _report(self, player, ev):
+        """Forward one report. Returns False if the mat vanished meanwhile."""
         now = self.clock()
         if player.dropped:
             # The kernel queue overflowed: rebuild the state from the device.
             player.dropped = False
             dev = player.dev
-            values = {code: dev.absinfo(code).value for code in player.mapper.abs_codes}
-            changes = player.mapper.reset(dev.active_keys(), values, now)
+            try:
+                values = {code: dev.absinfo(code).value for code in player.mapper.abs_codes}
+                keys = dev.active_keys()
+            except OSError as e:
+                self.disconnect(player, e.strerror or str(e))
+                return False
+            changes = player.mapper.reset(keys, values, now)
         else:
             changes = player.mapper.flush(now)
         if changes:
             self._send(player, changes)
             self.delays.add(self.wallclock() - ev.timestamp())
+        return True
 
     def _send(self, player, changes):
         if not changes:
@@ -207,9 +243,13 @@ class Bridge:
         """Point out a mat that is plugged into a port nobody is configured for."""
         if not self.config.mat_ids:
             return
+        links = {link: os.path.realpath(link) for link in glob.glob("/dev/input/by-path/*-event-joystick")}
+        if links == self._last_links:
+            return  # nothing plugged or unplugged since the last look
+        self._last_links = links
+        self._warned_ports &= set(links)  # a mat that leaves and comes back is reported again
         configured = {os.path.realpath(p.config.device) for p in self.players}
-        for link in glob.glob("/dev/input/by-path/*-event-joystick"):
-            target = os.path.realpath(link)
+        for link, target in links.items():
             if target in configured or link in self._warned_ports:
                 continue
             info = sysfs.describe_event_device(os.path.basename(target))
@@ -229,6 +269,7 @@ class Bridge:
 
     def run(self):
         self.start()
+        notify_systemd()
         gc.freeze()  # keep the long-lived setup objects out of garbage collection passes
         interval = self.config.stats_interval_s
         next_scan = 0.0
@@ -259,10 +300,7 @@ class Bridge:
         for player in self.players:
             self._send(player, player.mapper.release_all())
             if player.dev is not None:
-                try:
-                    player.dev.close()
-                except OSError:
-                    pass
+                _close_quietly(player.dev)
                 player.dev = None
         for pad in self.pads.values():
             pad.close()

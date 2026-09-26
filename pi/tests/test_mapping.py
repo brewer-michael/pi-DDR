@@ -121,6 +121,18 @@ class MapperTest(unittest.TestCase):
         self.assertEqual(m.expire(0.121), [(LEFT, 0)])
         self.assertIsNone(m.next_deadline())
 
+    def test_press_after_the_window_is_a_new_step(self):
+        # The loop can see the next press before it gets round to expiring
+        # the held-back release; that press must still count as a new step.
+        m = button_mapper(release_debounce=0.015)
+        m.feed(KEY, 0x120, 1)
+        m.flush(0.000)
+        m.feed(KEY, 0x120, 0)
+        self.assertEqual(m.flush(0.030), [])  # release due at 0.045
+        m.feed(KEY, 0x120, 1)
+        self.assertEqual(m.flush(0.0456), [(LEFT, 0), (LEFT, 1)])
+        self.assertIsNone(m.next_deadline())
+
     def test_release_all_and_reset(self):
         m = button_mapper()
         m.feed(KEY, 0x120, 1)

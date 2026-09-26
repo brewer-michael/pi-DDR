@@ -14,14 +14,15 @@ import errno
 import glob
 import os
 import selectors
+import shutil
 import sys
 import time
 
 from . import evcodes, sysfs
-from .config import BridgeConfig, PlayerConfig, format_config
-from .mapping import AXIS_THRESHOLD, Mapper, Source, format_source
+from .config import BridgeConfig, ConfigError, PlayerConfig, format_config, load_config
+from .mapping import Mapper, Source, axis_pressed, format_source
 from .padbridge import VIRTUAL_VENDOR
-from .timing import ChatterDetector, estimate_poll_interval
+from .timing import ChatterDetector, describe_poll_estimate, estimate_poll_interval
 
 OPTIONAL_CONTROLS = ("start", "back", "select")
 CORNER_CONTROLS = ("upleft", "upright", "downleft", "downright")
@@ -169,11 +170,7 @@ class WatchState:
 def print_summary(states):
     print()
     for st in states:
-        est = estimate_poll_interval(st.reports)
-        if est.interval_ms is None:
-            polling = f"need more steps ({est.samples} usable gaps, want 20+)"
-        else:
-            polling = f"reports land on a {est.interval_ms:g} ms grid ({est.samples} gaps)"
+        polling = describe_poll_estimate(estimate_poll_interval(st.reports))
         print(f"{st.dev.path} {st.dev.name!r}: {polling}")
         if st.chatter.hits:
             worst = min(gap for _, gap in st.chatter.hits) * 1000
@@ -260,10 +257,8 @@ class LearnDevice:
                 found = Source("key", ev.code)
             elif ev.type == evcodes.EV_ABS and ev.code in self.ranges:
                 lo, hi = self.ranges[ev.code]
-                span = hi - lo
-                norm = 2.0 * (ev.value - lo) / span - 1.0 if span > 0 else 0.0
                 for direction in (-1, 1):
-                    active = norm * direction > AXIS_THRESHOLD
+                    active = axis_pressed(ev.value, lo, hi, direction)
                     if active and (ev.code, direction) not in self.pressed_axes:
                         self.pressed_axes.add((ev.code, direction))
                         if found is None:
@@ -326,6 +321,11 @@ def check_jump(learn_dev, mapping, first, second, timeout=10.0):
         sel.close()
 
 
+def mapped_to(mapping, source):
+    """The control ``source`` is already mapped to, or None."""
+    return next((control for control, sources in mapping.items() if source in sources), None)
+
+
 def learn_player(number, candidates, links, with_corners):
     sel = selectors.DefaultSelector()
     for cand in candidates:
@@ -346,7 +346,14 @@ def learn_player(number, candidates, links, with_corners):
         optional = control not in ("down", "up", "right")
         hint = " (Enter to skip)" if optional else ""
         print(f"  Press {control.upper()}{hint}...", flush=True)
-        _, source = wait_for_press(sel, allow_skip=optional)
+        while True:
+            _, source = wait_for_press(sel, allow_skip=optional)
+            owner = mapped_to(mapping, source) if source is not None else None
+            if owner is None:
+                break
+            # Usually contact bounce from the previous arrow, or a misstep.
+            print(f"    that input is already {owner}; press {control.upper()}")
+            chosen.wait_release()
         if source is None:
             print(f"    {control} skipped")
             continue
@@ -373,6 +380,36 @@ def learn_player(number, candidates, links, with_corners):
     return PlayerConfig(number, link, mapping), chosen, ids
 
 
+def previous_config(path):
+    """The config currently at ``path``, or None if there is none or it doesn't parse."""
+    if not path or not os.path.exists(path):
+        return None
+    try:
+        return load_config(path)
+    except (OSError, ConfigError):
+        return None
+
+
+def write_config(path, text):
+    """Replace ``path`` atomically, keeping the old file as ``<path>.bak``.
+
+    The new file is complete on disk before it takes the old one's place, so
+    a full SD card or a crash can't leave the bridge without a config.
+    """
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+        f.flush()
+        os.fsync(f.fileno())
+    backup = None
+    if os.path.exists(path):
+        backup = path + ".bak"
+        shutil.copy2(path, backup)
+    os.replace(tmp, path)
+    return backup
+
+
 def cmd_learn(args):
     evdev = evcodes.require_evdev()
     devices = [d for d in open_controllers(evdev) if grab_or_explain(d)]
@@ -395,17 +432,25 @@ def cmd_learn(args):
         for dev in devices:
             dev.close()
 
-    config = BridgeConfig(players=players, release_debounce_ms=args.debounce_ms, mat_ids=sorted(mat_ids))
+    # Keep settings tuned by hand (debounce, stats) when re-learning.
+    old = previous_config(args.out)
+    if args.debounce_ms is not None:
+        debounce = args.debounce_ms
+    else:
+        debounce = old.release_debounce_ms if old else 0.0
+    config = BridgeConfig(
+        players=players,
+        release_debounce_ms=debounce,
+        stats_interval_s=old.stats_interval_s if old else 300.0,
+        mat_ids=sorted(mat_ids),
+    )
     text = format_config(config)
     if not args.out:
         print("\n" + text)
         return 0
-    if os.path.exists(args.out):
-        os.replace(args.out, args.out + ".bak")
-        print(f"\nprevious config kept as {args.out}.bak")
-    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
-    with open(args.out, "w", encoding="utf-8") as f:
-        f.write(text)
+    backup = write_config(args.out, text)
+    if backup:
+        print(f"\nprevious config kept as {backup}")
     print(f"wrote {args.out}. Apply it: sudo sh pi/padbridge/install.sh")
     return 0
 
@@ -421,7 +466,12 @@ def main(argv=None):
     learn.add_argument("--out", help="write the config here (default: print it)")
     learn.add_argument("--players", type=int, choices=(1, 2), default=2)
     learn.add_argument("--corners", action="store_true", help="also map the corner arrows (for 'solo' charts)")
-    learn.add_argument("--debounce-ms", type=float, default=0.0, help="release_debounce_ms to write")
+    learn.add_argument(
+        "--debounce-ms",
+        type=float,
+        default=None,
+        help="release_debounce_ms to write (default: keep the value already in --out, else 0)",
+    )
     args = parser.parse_args(argv)
     handler = {"list": cmd_list, "watch": cmd_watch, "learn": cmd_learn}[args.command]
     return handler(args)
