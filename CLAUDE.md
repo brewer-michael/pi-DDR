@@ -28,7 +28,7 @@ This is a DIY home dance-game (DDR-style) setup:
 
 ## Constraints to keep in mind
 
-- **Target hardware is a Raspberry Pi 4 (ARM64 Linux).** Development happens on a Windows machine, so scripts that run on the Pi must be POSIX/Linux shell or cross-platform. Don't write Windows-only tooling for anything that runs on the device.
+- **Target hardware is a Raspberry Pi 4 (ARM64 Linux, Raspberry Pi OS Lite 64-bit).** Everything is designed, tested and released for the Pi. Scripts are POSIX `sh`; Python uses the Pi's `python3` plus Raspberry Pi OS apt packages (python3-evdev), not pip. Don't add Windows or cross-platform accommodations.
 - **Audio path (decided):** the Pi outputs plain **stereo**, and the receiver upmixes it to 5.1. This was chosen for low latency. Don't add multichannel output, surround encoding, or channel-mapping config on the Pi. Keep the Pi's audio chain as direct as possible (for example, ALSA straight to the device, no extra resampling or effects). Any remaining audio delay comes from the receiver's upmix processing, so fix it with the game's global audio offset calibration rather than on the Pi.
 - **Two-player input:** both USB mats must be told apart consistently as P1 and P2, even after reboots or replugging. Stable device naming (for example, udev rules) matters.
 - **Latency:** input and audio latency on the Pi directly affect whether the game is playable, so treat them as primary concerns.
@@ -45,19 +45,19 @@ This is a DIY home dance-game (DDR-style) setup:
 
 - `docs/`: `bill-of-materials.md`, `platform-plans.md`, `latency-and-sync.md` (includes the Pi setup runbook). Drawings are hand-written SVGs in `docs/img/`.
 - `hardware/bom.csv`: machine-readable BOM. **Keep it in sync with `docs/bill-of-materials.md`** (items, quantities, prices).
-- `pi/piddr/`: Python package run on the Pi.
-  - `evcodes`, `mapping`, `timing`, `sysfs`, `config` are stdlib-only and pure.
-  - `matprobe` and `padbridge` import python-evdev lazily, via `evcodes.require_evdev()`.
-- `pi/tests/`: unittest suite for the pure modules, plus the bridge with fake evdev objects.
-- `pi/padbridge/`: systemd unit, installer, example config.
+- `pi/install.sh`: the one installer for the Pi (packages, system tuning, pad bridge, OutFox prefs, boot into the game). Safe to re-run; it calls the scripts below.
+- `pi/piddr/`: Python package, run on the Pi (needs python3-evdev). `evcodes` wraps `evdev.ecodes`; `mapping`, `timing`, `sysfs`, `config` hold the logic; `matprobe` and `padbridge` are the CLIs.
+- `pi/tests/`: unittest suite; the bridge is tested with fake evdev objects.
+- `pi/padbridge/`: systemd unit, bridge installer, example config.
 - `pi/setup/`: `configure-pi.sh` (kernel cmdline, CPU governor, audio priority limits), `xinitrc`.
 - `pi/outfox/`: recommended OutFox preferences and `apply-prefs.sh`.
 
 ## Commands
 
-- Tests (any OS, no evdev needed): `cd pi && python3 -m unittest discover -s tests`
-- Lint shell scripts: `shellcheck -s sh pi/setup/configure-pi.sh pi/padbridge/install.sh pi/outfox/apply-prefs.sh pi/setup/xinitrc`
-- On the Pi (from `pi/`):
+- Install or update on the Pi: `sudo sh pi/install.sh`
+- Tests (on the Pi, or any Linux with python3-evdev): `cd pi && python3 -m unittest discover -s tests`
+- Lint shell scripts: `shellcheck -s sh pi/install.sh pi/setup/configure-pi.sh pi/padbridge/install.sh pi/outfox/apply-prefs.sh pi/setup/xinitrc`
+- From `pi/`:
   - `sudo python3 -m piddr.matprobe list|watch|learn`
   - `python3 -m piddr.padbridge --config FILE --check|--print-udev-rules`
 - Preview system changes: `sh pi/setup/configure-pi.sh --dry-run`
@@ -65,7 +65,7 @@ This is a DIY home dance-game (DDR-style) setup:
 ## Conventions
 
 - Shell scripts that run on the Pi are POSIX `sh` (no bashisms), idempotent, and must pass shellcheck.
-- Keep the pure Python modules free of third-party imports so the tests run on Windows.
+- New Pi-side steps go into `pi/install.sh` (directly or via a script it calls), so a fresh Pi is always one command away from playable.
 - Physical dimensions: inches first with metric in parentheses. They are based on the reference mat (32-3/4 × 36-5/8 × 3/8 in), always with the formula alongside.
 - SVG drawings need an explicit white background rect so they read on GitHub dark mode. Render them to check after editing: headless Chromium with a viewport about 100 px taller than the SVG.
 - Claims about OutFox internals are inferred from the StepMania 5.1 source (OutFox is closed). Say so where it matters, and cite the file.

@@ -23,12 +23,20 @@ A home DDR-style dance game for two players:
 
 ## What runs on the Pi
 
+Everything in [`pi/`](pi/) is built for a Raspberry Pi 4 running Raspberry Pi OS
+Lite (64-bit). One command installs it, and is safe to re-run after updates:
+
+```sh
+sudo sh ~/pi-DDR/pi/install.sh
+```
+
 | Path | What it does |
 |---|---|
+| [`pi/install.sh`](pi/install.sh) | The installer: packages, system tuning, pad bridge, OutFox preferences, boot into the game. |
 | [`pi/setup/configure-pi.sh`](pi/setup/configure-pi.sh) | System tuning: 1 ms mat polling, CPU at full clock, audio thread priority, pinned HDMI mode. |
 | [`pi/piddr/matprobe.py`](pi/piddr/matprobe.py) | Checks mats (HID type, real polling rate, chatter, jumps) and writes the pad bridge config. |
 | [`pi/piddr/padbridge.py`](pi/piddr/padbridge.py) + [`pi/padbridge/`](pi/padbridge/) | Service that presents the mats to the game as two fixed virtual pads, so P1 and P2 never swap. |
-| [`pi/outfox/`](pi/outfox/) | Recommended OutFox audio and input preferences, and a script that merges them in. |
+| [`pi/outfox/`](pi/outfox/) | Recommended OutFox audio and input preferences, and the script that merges them in. |
 | [`pi/setup/xinitrc`](pi/setup/xinitrc) | Boots straight into OutFox on a bare X server. |
 
 ## Build order
@@ -41,14 +49,10 @@ A home DDR-style dance game for two players:
 4. **Configure the receiver and TV**, then **calibrate**
    ([Calibration](docs/latency-and-sync.md#calibration)).
 
-## Development
+## Tests
 
-The Pi tools are Python 3 and POSIX `sh`. Their core logic has no third-party
-dependencies, so the tests run anywhere, including Windows:
+Run them on the Pi (they need python3-evdev, which the installer adds):
 
 ```sh
-cd pi
-python3 -m unittest discover -s tests
+cd ~/pi-DDR/pi && python3 -m unittest discover -s tests
 ```
-
-On the Pi, `matprobe` and the pad bridge also need `python3-evdev`.

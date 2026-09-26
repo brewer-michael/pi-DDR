@@ -55,11 +55,9 @@ def write(path, content, mode="w"):
 class DescribeDeviceTest(unittest.TestCase):
     def test_walks_up_from_the_input_node(self):
         with tempfile.TemporaryDirectory() as root:
-            # Real sysfs names contain ':' (1-1.3:1.0, 0003:0079:0011.0001), which
-            # Windows forbids. The walk goes by files, not names, so '_' stands in.
             usb_dev = os.path.join(root, "devices", "usb1", "1-1", "1-1.3")
-            iface = os.path.join(usb_dev, "1-1.3_1.0")
-            hid = os.path.join(iface, "0003_0079_0011.0001")
+            iface = os.path.join(usb_dev, "1-1.3:1.0")
+            hid = os.path.join(iface, "0003:0079:0011.0001")
             input_dir = os.path.join(hid, "input", "input5")
             os.makedirs(input_dir)
             write(os.path.join(usb_dev, "idVendor"), "0079\n")

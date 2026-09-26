@@ -1,12 +1,12 @@
 #!/bin/sh
-# Install or update the pi-DDR pad bridge. Run from the repo on the Pi:
+# Install or update the pi-DDR pad bridge. pi/install.sh runs this for you;
+# run it directly only to update or remove just the bridge:
 #
 #   sudo sh pi/padbridge/install.sh              # install / apply config changes
 #   sudo sh pi/padbridge/install.sh --uninstall
 #
-# First time: it installs the code and stops, asking you to map the mats with
-# `matprobe learn`. Run it again afterwards to install the udev rule and the
-# service. Run it again whenever /etc/pi-ddr/padbridge.conf changes.
+# Until the mats are mapped (`matprobe learn`) it installs the code and stops.
+# Run it again afterwards, and whenever /etc/pi-ddr/padbridge.conf changes.
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -55,7 +55,7 @@ if [ ! -f "$CONF" ]; then
     echo
     echo "No $CONF yet. With both mats plugged into their P1/P2 ports, run:"
     echo "  sudo PYTHONPATH=$PREFIX python3 -m piddr.matprobe learn --out $CONF"
-    echo "then run this installer again."
+    echo "then run the installer again: sudo sh $PI_DIR/install.sh"
     exit 0
 fi
 

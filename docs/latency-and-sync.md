@@ -84,8 +84,8 @@ Cheap mats usually request 10 ms, and the Pi 4's USB controller rounds that down
 to 8 ms. The kernel option `usbhid.jspoll=1` overrides the mat's request with
 1 ms, but only for devices whose USB descriptor calls them a **Joystick**. Mats
 that call themselves a **Gamepad** keep their own rate. The option takes effect
-when a mat is plugged in, so reboot or replug after setting it.
-[`configure-pi.sh`](../pi/setup/configure-pi.sh) sets it.
+when a mat is plugged in, so reboot or replug after setting it. The installer
+sets it (in [`configure-pi.sh`](../pi/setup/configure-pi.sh)).
 
 Check each mat:
 
@@ -163,7 +163,7 @@ something is starving the CPU (check for throttling).
   on the mat, or return it.
 - **Chatter** is one step that reads as press–release–press within a few ms.
   `matprobe watch` flags it. Set `release_debounce_ms = 15` (up to 20) in
-  `/etc/pi-ddr/padbridge.conf` and re-run the installer. The bridge then holds
+  `/etc/pi-ddr/padbridge.conf` and run `sudo sh ~/pi-DDR/pi/install.sh`. The bridge then holds
   back *releases* for that long and drops them if the arrow is pressed again.
   *Presses are never delayed*, so this costs no latency. Holds just end 15 ms
   later.
@@ -183,9 +183,9 @@ does the upmix. On the Pi, the chain is as short as it can be:
 | `ThreadedInput` | `1` | Timestamp steps on arrival (the default; set to be sure). |
 | `Vsync` | `1` | Smooth scrolling. Judging doesn't depend on frames. |
 
-[`pi/outfox/apply-prefs.sh`](../pi/outfox/apply-prefs.sh) writes these into
-`~/.project-outfox/Save/Preferences.ini`. Run it as the playing user with OutFox
-closed, because OutFox rewrites that file when it exits. OutFox's preferences
+The installer merges these into `~/.project-outfox/Save/Preferences.ini` (via
+[`pi/outfox/apply-prefs.sh`](../pi/outfox/apply-prefs.sh)). OutFox has to be
+closed at the time, because it rewrites that file when it exits. OutFox's preferences
 page also lists a driver called `alsa`. If `ALSA-sw` misbehaves, try it and
 calibrate again.
 
@@ -201,7 +201,7 @@ More details:
   hear crackles, set `SoundWriteAhead=1024` in Preferences.ini.
 - **Audio thread priority.** The mixer thread asks Linux for priority nice -15.
   An ordinary user isn't allowed that unless limits permit it, and the request
-  fails silently. `configure-pi.sh` allows it for the `audio` group, which the
+  fails silently. The installer allows it for the `audio` group, which the
   default Pi user belongs to.
 - **Test the output** with OutFox closed:
   `speaker-test -D hdmi:CARD=vc4hdmi0,DEV=0 -c 2 -r 48000 -t wav`. You should
@@ -243,9 +243,9 @@ These are where most of the unknown audio delay comes from.
 
 - **TV:** Game Mode for the input the receiver feeds. Turn off motion smoothing
   and other picture "enhancements"; Game Mode usually does this.
-- **Resolution:** pin the output to 1080p at 60 Hz with
-  `configure-pi.sh --video 1920x1080@60`. On a 4K TV the Pi 4 would otherwise
-  pick the TV's preferred 4K mode, which it can only drive at 30 Hz. If OutFox
+- **Resolution:** the installer pins the output to 1080p at 60 Hz. On a 4K TV
+  the Pi 4 would otherwise pick the TV's preferred 4K mode, which it can only
+  drive at 30 Hz. If OutFox
   can't hold a steady 60 fps (you see stutter), lower OutFox's own resolution to
   1280 × 720 first; heavy themes and background videos cost the most. A steady
   frame rate matters more than resolution: judging doesn't depend on it, but
@@ -259,45 +259,44 @@ These are where most of the unknown audio delay comes from.
 
 ## Setup, in order
 
+Everything below runs on the Pi. `pi/install.sh` does the Pi-side work in one
+go, and it is safe to run again.
+
 1. Flash **Raspberry Pi OS Lite (64-bit)** with Raspberry Pi Imager. Set a user,
    enable SSH and Wi-Fi (for setup only).
-2. Update and install the basics:
+2. **Get the repo:**
    ```sh
-   sudo apt update && sudo apt full-upgrade -y
-   sudo apt install -y --no-install-recommends xserver-xorg xinit x11-xserver-utils libgl1-mesa-dri git python3-evdev alsa-utils
+   sudo apt update && sudo apt full-upgrade -y && sudo apt install -y git
    git clone https://github.com/brewer-michael/pi-DDR ~/pi-DDR
    ```
 3. **Install OutFox:** download the Raspberry Pi (arm64) build from
    [projectoutfox.com/downloads](https://projectoutfox.com/downloads) and unpack it
    under `~/ProjectOutFox/`. (Pi-Apps can install it too, but it may offer an
-   older build.) If it won't start, `ldd ~/ProjectOutFox/*/OutFox | grep "not found"`
-   lists the libraries to `apt install`.
-4. **Tune the system**, then reboot:
+   older build.)
+4. **Run the installer:** `sudo sh ~/pi-DDR/pi/install.sh`. It:
+   - installs the packages (a bare X server for the game, python3-evdev, ALSA tools);
+   - applies the system settings (1 ms mat polling, full CPU clock, audio thread
+     priority, HDMI pinned to 1080p60; set `PIDDR_VIDEO=1280x720@60` to change it);
+   - installs the pad bridge;
+   - merges the OutFox preferences;
+   - sets the Pi to boot straight into OutFox on the console.
+5. **Map the mats**, each plugged into its labelled port:
    ```sh
-   sudo sh ~/pi-DDR/pi/setup/configure-pi.sh --video 1920x1080@60   # --dry-run previews
-   sudo reboot
+   cd ~/pi-DDR/pi
+   sudo python3 -m piddr.matprobe list      # optional: HID type and polling per mat
+   sudo python3 -m piddr.matprobe learn --out /etc/pi-ddr/padbridge.conf
+   sudo sh ~/pi-DDR/pi/install.sh           # adds the udev rule, starts the bridge
    ```
-5. **Check the mats** (each in its labelled port):
-   `cd ~/pi-DDR/pi && sudo python3 -m piddr.matprobe list`
-6. **Install the pad bridge, map the mats, install again:**
-   ```sh
-   sudo sh ~/pi-DDR/pi/padbridge/install.sh
-   sudo PYTHONPATH=/opt/pi-ddr python3 -m piddr.matprobe learn --out /etc/pi-ddr/padbridge.conf
-   sudo sh ~/pi-DDR/pi/padbridge/install.sh
-   ```
-   Then replug both mats (or reboot).
-7. **OutFox preferences** (OutFox closed): `sh ~/pi-DDR/pi/outfox/apply-prefs.sh`
-8. **Boot straight into the game:**
-   ```sh
-   sudo raspi-config nonint do_boot_behaviour B2   # console autologin
-   echo '[ "$(tty)" = /dev/tty1 ] && exec startx "$HOME/pi-DDR/pi/setup/xinitrc" -- -nocursor' >> ~/.profile
-   sudo reboot
-   ```
-   OutFox now starts on boot, and starts again if it's quit. For a shell, SSH in.
-9. **Map the pads in OutFox** (its controller/key mapping screen): P1's arrows to
+6. **Reboot** (`sudo reboot`). OutFox now starts on its own, and starts again if
+   it's quit. For a shell, SSH in. If OutFox doesn't start,
+   `ldd ~/ProjectOutFox/*/OutFox | grep "not found"` lists libraries to
+   `apt install`.
+7. **Map the pads in OutFox** (its controller/key mapping screen): P1's arrows to
    "pi-DDR P1" buttons 1–4, P2's to "pi-DDR P2" buttons 1–4, plus Start and Back
    (buttons 9 and 10).
-10. **Calibrate** (next section).
+8. **Calibrate** (next section).
+
+**Updating:** `cd ~/pi-DDR && git pull && sudo sh pi/install.sh`, then reboot.
 
 ## Calibration
 

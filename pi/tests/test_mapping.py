@@ -23,12 +23,16 @@ class ParseSourceTest(unittest.TestCase):
                 parse_source(bad)
 
     def test_round_trip(self):
-        for text in ("BTN_TRIGGER", "BTN_TRIGGER_HAPPY3", "ABS_HAT0Y+", "ABS_X-"):
+        for text in ("BTN_TRIGGER", "BTN_TRIGGER_HAPPY3", "ABS_HAT0Y+", "ABS_X-", "key:1000", "abs:41-"):
             self.assertEqual(format_source(parse_source(text)), text)
-        # Numeric codes may or may not have a name (python-evdev knows more names).
-        for text in ("key:1000", "abs:40-"):
-            source = parse_source(text)
-            self.assertEqual(parse_source(format_source(source)), source)
+
+    def test_aliases_parse_but_print_one_name(self):
+        self.assertEqual(parse_source("btn_joystick"), Source("key", 0x120))
+        self.assertEqual(parse_source("BTN_A"), Source("key", 0x130))
+        self.assertEqual(format_source(Source("key", 0x120)), "BTN_TRIGGER")
+        self.assertEqual(format_source(Source("key", 0x130)), "BTN_SOUTH")
+        self.assertEqual(format_source(Source("key", 0x100)), "BTN_0")
+        self.assertEqual(format_source(Source("key", 0x2C0)), "BTN_TRIGGER_HAPPY1")
 
     def test_list(self):
         self.assertEqual(

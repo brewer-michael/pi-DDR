@@ -18,6 +18,8 @@ import shutil
 import sys
 import time
 
+import evdev
+
 from . import evcodes, sysfs
 from .config import BridgeConfig, ConfigError, PlayerConfig, format_config, load_config
 from .mapping import Mapper, Source, axis_pressed, format_source
@@ -58,7 +60,7 @@ def is_virtual_pad(dev):
     return dev.info.vendor == VIRTUAL_VENDOR and dev.name.startswith("pi-DDR")
 
 
-def open_controllers(evdev, paths=None, include_virtual=False):
+def open_controllers(paths=None, include_virtual=False):
     """Open the given devices, or every game controller except our virtual pads."""
     opened, denied = [], []
     for path in paths or sorted(evdev.list_devices(), key=_natural_key):
@@ -139,10 +141,9 @@ def describe(dev, links, jspoll):
 
 
 def cmd_list(args):
-    evdev = evcodes.require_evdev()
     links = by_path_links()
     jspoll = sysfs.usbhid_jspoll()
-    devices = open_controllers(evdev, include_virtual=True)
+    devices = open_controllers(include_virtual=True)
     print(f"usbhid.jspoll = {jspoll if jspoll is not None else 'unknown'} (0 = each device's own rate)\n")
     if not devices:
         print("No game controllers found. Is the mat plugged in? (run with sudo to see hidden raw mats)")
@@ -184,8 +185,7 @@ def print_summary(states):
 
 
 def cmd_watch(args):
-    evdev = evcodes.require_evdev()
-    devices = open_controllers(evdev, paths=args.devices)
+    devices = open_controllers(paths=args.devices)
     devices = [d for d in devices if grab_or_explain(d)]
     if not args.grab:
         for dev in devices:
@@ -411,8 +411,7 @@ def write_config(path, text):
 
 
 def cmd_learn(args):
-    evdev = evcodes.require_evdev()
-    devices = [d for d in open_controllers(evdev) if grab_or_explain(d)]
+    devices = [d for d in open_controllers() if grab_or_explain(d)]
     if not devices:
         print("No mats found. Plug them into their P1/P2 ports and run this with sudo.", file=sys.stderr)
         return 1
@@ -451,7 +450,10 @@ def cmd_learn(args):
     backup = write_config(args.out, text)
     if backup:
         print(f"\nprevious config kept as {backup}")
-    print(f"wrote {args.out}. Apply it: sudo sh pi/padbridge/install.sh")
+    installer = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "install.sh")
+    if not os.path.exists(installer):  # running the copy in /opt/pi-ddr
+        installer = "~/pi-DDR/pi/install.sh"
+    print(f"wrote {args.out}. Apply it: sudo sh {installer}")
     return 0
 
 

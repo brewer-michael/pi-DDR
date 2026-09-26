@@ -308,7 +308,6 @@ class NotifyTest(unittest.TestCase):
         with mock.patch.dict(os.environ, {}, clear=True):
             self.assertFalse(notify_systemd())
 
-    @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "needs Unix sockets")
     def test_sends_ready(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "notify")

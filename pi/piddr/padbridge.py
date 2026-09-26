@@ -21,6 +21,8 @@ import socket
 import sys
 import time
 
+import evdev
+
 from . import evcodes, sysfs
 from .config import ConfigError, load_config, udev_rules
 from .mapping import VIRTUAL_BUTTONS, Mapper
@@ -338,7 +340,7 @@ def main(argv=None):
         print(f"release_debounce_ms={config.release_debounce_ms:g} mat_ids={config.mat_ids}")
         return 0
 
-    bridge = Bridge(config, evcodes.require_evdev())
+    bridge = Bridge(config, evdev)
 
     def request_stop(signum, frame):
         bridge.stop_requested = True
