@@ -1,0 +1,27 @@
+#!/bin/sh
+# X session that runs only the game: no desktop, no window manager, no
+# compositor between OutFox and the screen. Started on tty1 by this line in
+# ~/.profile (see docs/latency-and-sync.md, "Setup, in order"):
+#
+#   [ "$(tty)" = /dev/tty1 ] && exec startx "$HOME/pi-DDR/pi/setup/xinitrc" -- -nocursor
+#
+# Set OUTFOX_BIN if OutFox is not under ~/ProjectOutFox/<version>/OutFox.
+
+xset s off -dpms s noblank
+
+if [ -z "${OUTFOX_BIN:-}" ]; then
+    for candidate in "$HOME"/ProjectOutFox/*/OutFox "$HOME"/OutFox*/OutFox; do
+        if [ -x "$candidate" ]; then
+            OUTFOX_BIN=$candidate
+            break
+        fi
+    done
+fi
+
+if [ -z "${OUTFOX_BIN:-}" ] || [ ! -x "$OUTFOX_BIN" ]; then
+    echo "OutFox not found. Set OUTFOX_BIN in ~/.profile." >&2
+    exit 1
+fi
+
+cd "$(dirname "$OUTFOX_BIN")" || exit 1
+exec "$OUTFOX_BIN"

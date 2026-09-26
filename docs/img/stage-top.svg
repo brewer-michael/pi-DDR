@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="660" viewBox="0 0 820 660" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#222">
+  <title>pi-DDR stage, top view</title>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+    </marker>
+    <g id="mat">
+      <!-- mat body 262 x 293 px (32-3/4 x 36-5/8 in at 8 px/in) -->
+      <rect x="0" y="0" width="262" height="293" rx="6" fill="#5b6576"/>
+      <rect x="92" y="8" width="34" height="14" rx="3" fill="#8d97a8"/>
+      <rect x="136" y="8" width="34" height="14" rx="3" fill="#8d97a8"/>
+      <text x="109" y="19" font-size="8" text-anchor="middle" fill="#fff">SELECT</text>
+      <text x="153" y="19" font-size="8" text-anchor="middle" fill="#fff">START</text>
+      <g stroke="#7a8597" stroke-width="1">
+        <line x1="0" y1="31" x2="262" y2="31"/>
+        <line x1="0" y1="118" x2="262" y2="118"/>
+        <line x1="0" y1="205" x2="262" y2="205"/>
+        <line x1="87" y1="31" x2="87" y2="293"/>
+        <line x1="175" y1="31" x2="175" y2="293"/>
+      </g>
+      <g fill="#f2f4f7">
+        <path d="M131,50 L156,95 L106,95 z"/>
+        <path d="M131,274 L156,229 L106,229 z"/>
+        <path d="M20,161 L65,136 L65,186 z"/>
+        <path d="M242,161 L197,136 L197,186 z"/>
+      </g>
+    </g>
+  </defs>
+
+  <rect width="820" height="660" fill="#fff"/>
+
+  <!-- direction labels -->
+  <text x="402" y="24" text-anchor="middle" font-size="14" font-weight="bold">FRONT: faces the TV (mat cables exit here)</text>
+  <text x="402" y="612" text-anchor="middle" font-size="14" font-weight="bold">REAR: players step on from here</text>
+
+  <!-- overall width -->
+  <line x1="90" y1="48" x2="90" y2="104" stroke="#888" stroke-dasharray="3,3"/>
+  <line x1="714" y1="48" x2="714" y2="104" stroke="#888" stroke-dasharray="3,3"/>
+  <line x1="90" y1="52" x2="714" y2="52" stroke="#444" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <text x="402" y="46" text-anchor="middle">78 in (1976 mm): two modules side by side</text>
+  <!-- module width -->
+  <line x1="402" y1="72" x2="402" y2="104" stroke="#888" stroke-dasharray="3,3"/>
+  <line x1="90" y1="80" x2="402" y2="80" stroke="#444" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <text x="246" y="74" text-anchor="middle">39 in (988 mm) per module</text>
+
+  <!-- P1 module -->
+  <rect x="90" y="110" width="312" height="367" fill="#d9bf8f" stroke="#7a5c2e" stroke-width="2"/>
+  <rect x="114" y="134" width="264" height="295" fill="#efe6d2" stroke="#7a5c2e" stroke-width="1.5"/>
+  <use href="#mat" x="115" y="135"/>
+  <rect x="243" y="110" width="6" height="24" fill="#fff" stroke="#7a5c2e"/>
+
+  <!-- P2 module -->
+  <rect x="402" y="110" width="312" height="367" fill="#d9bf8f" stroke="#7a5c2e" stroke-width="2"/>
+  <rect x="426" y="134" width="264" height="295" fill="#efe6d2" stroke="#7a5c2e" stroke-width="1.5"/>
+  <use href="#mat" x="427" y="135"/>
+  <rect x="555" y="110" width="6" height="24" fill="#fff" stroke="#7a5c2e"/>
+
+  <!-- optional safety bars (dashed) -->
+  <g stroke="#b03a2e" fill="none" stroke-width="2" stroke-dasharray="6,4">
+    <circle cx="120" cy="453" r="15"/>
+    <circle cx="372" cy="453" r="15"/>
+    <line x1="120" y1="453" x2="372" y2="453"/>
+    <circle cx="432" cy="453" r="15"/>
+    <circle cx="684" cy="453" r="15"/>
+    <line x1="432" y1="453" x2="684" y2="453"/>
+  </g>
+
+  <!-- player labels sit on top of the bar line -->
+  <rect x="226" y="441" width="40" height="22" rx="3" fill="#d9bf8f"/>
+  <text x="246" y="458" text-anchor="middle" font-size="16" font-weight="bold" fill="#4a3514">P1</text>
+  <rect x="538" y="441" width="40" height="22" rx="3" fill="#d9bf8f"/>
+  <text x="558" y="458" text-anchor="middle" font-size="16" font-weight="bold" fill="#4a3514">P2</text>
+
+  <!-- cable notch callout -->
+  <line x1="561" y1="120" x2="600" y2="96" stroke="#444"/>
+  <text x="604" y="100">cable notch 3/4 in wide</text>
+
+  <!-- depth breakdown, right side -->
+  <g stroke="#888" stroke-dasharray="3,3">
+    <line x1="714" y1="110" x2="770" y2="110"/>
+    <line x1="690" y1="134" x2="770" y2="134"/>
+    <line x1="690" y1="429" x2="770" y2="429"/>
+    <line x1="714" y1="477" x2="770" y2="477"/>
+  </g>
+  <g stroke="#444" marker-start="url(#arr)" marker-end="url(#arr)">
+    <line x1="760" y1="110" x2="760" y2="134"/>
+    <line x1="760" y1="134" x2="760" y2="429"/>
+    <line x1="760" y1="429" x2="760" y2="477"/>
+  </g>
+  <text x="768" y="126" font-size="12">3 in</text>
+  <text x="768" y="276" font-size="12">bay</text>
+  <text x="768" y="291" font-size="12">36-7/8 in</text>
+  <text x="768" y="306" font-size="12">(936)</text>
+  <text x="768" y="457" font-size="12">6 in</text>
+
+  <!-- overall depth, left side -->
+  <line x1="40" y1="110" x2="90" y2="110" stroke="#888" stroke-dasharray="3,3"/>
+  <line x1="40" y1="477" x2="90" y2="477" stroke="#888" stroke-dasharray="3,3"/>
+  <line x1="50" y1="110" x2="50" y2="477" stroke="#444" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <text x="40" y="294" text-anchor="middle" transform="rotate(-90 40 294)">45-7/8 in (1164 mm)</text>
+
+  <!-- bay width and side borders, bottom -->
+  <g stroke="#888" stroke-dasharray="3,3">
+    <line x1="402" y1="477" x2="402" y2="520"/>
+    <line x1="426" y1="429" x2="426" y2="520"/>
+    <line x1="690" y1="429" x2="690" y2="520"/>
+    <line x1="714" y1="477" x2="714" y2="520"/>
+  </g>
+  <g stroke="#444" marker-start="url(#arr)" marker-end="url(#arr)">
+    <line x1="426" y1="510" x2="690" y2="510"/>
+  </g>
+  <text x="558" y="504" text-anchor="middle">bay 33 in (836 mm)</text>
+  <text x="414" y="536" text-anchor="middle" font-size="12">3 in</text>
+  <text x="702" y="536" text-anchor="middle" font-size="12">3 in</text>
+
+  <!-- legend -->
+  <g font-size="12">
+    <rect x="90" y="560" width="18" height="12" fill="#d9bf8f" stroke="#7a5c2e"/>
+    <text x="114" y="571">border, 1/2 in plywood on a 3/4 in base</text>
+    <rect x="360" y="560" width="18" height="12" fill="#5b6576"/>
+    <text x="384" y="571">USB mat on non-slip underlay</text>
+    <line x1="580" y1="566" x2="600" y2="566" stroke="#b03a2e" stroke-width="2" stroke-dasharray="6,4"/>
+    <text x="606" y="571">optional safety bar</text>
+    <text x="90" y="592" fill="#555">Scale 1 in = 8 px. Sized for a 32-3/4 x 36-5/8 in mat; see the formulas to fit yours.</text>
+  </g>
+</svg>

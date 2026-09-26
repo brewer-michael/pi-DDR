@@ -1,0 +1,16 @@
+# pi-DDR recommended OutFox preferences, merged into the [Options] section of
+# ~/.project-outfox/Save/Preferences.ini by apply-prefs.sh.
+# Why each one: docs/latency-and-sync.md, "Game settings".
+# Input mapping, GlobalOffsetSeconds and VisualDelaySeconds are set inside
+# OutFox (calibration), not here.
+
+# Talk to ALSA directly instead of going through PulseAudio/PipeWire.
+SoundDrivers=ALSA-sw
+# HDMI0 (the micro-HDMI port next to USB-C power) via ALSA's "hdmi" device,
+# which only packs samples into HDMI's frame format: no resampling, no effects.
+SoundDevice=hdmi:CARD=vc4hdmi0,DEV=0
+# One sample rate end to end: game, HDMI link and receiver all at 48 kHz.
+SoundPreferredSampleRate=48000
+# Read pads on their own thread so each step is timestamped when it arrives.
+ThreadedInput=1
+Vsync=1
