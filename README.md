@@ -7,6 +7,8 @@ A home DDR-style dance game for two players:
 - **Picture:** the TV, over HDMI.
 - **Sound:** a 5.1 surround receiver. The Pi sends stereo and the receiver upmixes it.
 
+![The assembled setup: the two-module stage with both mats, the TV on a console with the receiver and the Pi, and the 5.1 speakers](docs/img/assembled.svg)
+
 ```
  Mat P1 ─┐  USB (1 ms polling)                     HDMI (stereo + video)
          ├──> Raspberry Pi 4 ── pad bridge ── OutFox ───────> AV receiver ──> 5.1 speakers

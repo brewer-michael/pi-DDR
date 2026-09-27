@@ -6,6 +6,8 @@ that is level with the mat's surface. It is built as two identical modules (P1
 on the left, P2 on the right, as seen when facing the TV). Each one is light
 enough to carry, and the pair fits in a hatchback.
 
+![The stage assembled in front of the TV, with the Pi, the receiver and the speakers](img/assembled.svg)
+
 Everything below is sized for a **reference mat of 32-3/4 × 36-5/8 × 3/8 in
 (830 × 930 × 10 mm)**, a common size for inexpensive PC mats. **Measure your own
 mats before cutting anything** and rework the numbers with the formulas in step 1.
