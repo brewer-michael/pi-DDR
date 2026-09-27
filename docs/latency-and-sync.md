@@ -39,6 +39,11 @@ machine.
    timing precision. A step between two frames is judged at its exact time.
 3. **Arrows are drawn from the same clock**, shifted by `VisualDelaySeconds`.
 
+One difference is already known. OutFox's own Preferences.ini reference lists
+**SDL** as its default input driver on Linux (`InputDrivers`), not the
+StepMania 5.1 driver behind point 2. Whether OutFox also judges each step at
+its arrival time is one of the things to check on the Pi.
+
 What follows from that:
 
 - **Fixed delay can be calibrated away.** Delay after the Pi on the audio path
@@ -63,7 +68,7 @@ polling it's ±0.5 ms.
 | Inside the mat (switch scan) | unknown, model-specific | a little | pick mats that test clean | Global Offset |
 | USB polling | avg 4 ms at the usual 8 ms rate | yes: 0–8 ms | `usbhid.jspoll=1`, now 0–1 ms | Global Offset (the average) |
 | Kernel + pad bridge | well under 1 ms | barely | real-time priority | – |
-| Game input thread | microseconds | barely | `ThreadedInput=1` (default) | – |
+| Game input (OutFox's SDL driver) | not measured yet | not known yet | – | – |
 | Game audio buffer | 512 frames, about 11 ms at 48 kHz | no | ALSA directly | automatic (the game measures it) |
 | Receiver: decode, upmix, room EQ | a few ms to tens of ms, model and mode specific | no, if the mode is fixed | one fixed mode, auto lip-sync off | Global Offset |
 | Sound travelling through the air | 2.9 ms per metre (0.9 ms per foot) | no | – | Global Offset |
@@ -142,6 +147,16 @@ a small service that starts at boot, before the game:
   The game may call the pads Joy1/Joy2 or use other numbers, depending on its
   input driver. The pad names are what tell them apart.
 
+**OutFox's input driver.** OutFox's Preferences.ini reference lists SDL as its
+default input driver on Linux (`InputDrivers`), not the StepMania 5.1 code
+described above, and its default `UseOldJoystickMapping=1` ("HIDAPI" mode) maps
+pads by button number. The bridge is meant to hold up either way: the game sees
+exactly two pads, with fixed names and USB IDs (1209:0001 for P1, 1209:0002 for
+P2), and P1 is always created first. Check on the Pi that OutFox lists P1 first.
+If the pads show no buttons in Config Key/Joy Mappings, try
+`UseOldJoystickMapping=0` ("XInput" mode) together with OutFox's Map Controller
+screen.
+
 **Latency cost:** one extra hop through the kernel. The bridge runs with real-time
 priority (`SCHED_FIFO`), sleeps until a report arrives, and forwards each
 report as a single unit, so a jump stays a jump. It measures its own delay
@@ -180,8 +195,7 @@ does the upmix. On the Pi, the chain is as short as it can be:
 | `SoundDrivers` | `ALSA-sw` | Straight to ALSA. PulseAudio/PipeWire would add their own buffer and possibly resampling. |
 | `SoundDevice` | `hdmi:CARD=vc4hdmi0,DEV=0` | HDMI0 (the micro-HDMI port next to USB-C). ALSA's `hdmi:` device only packs samples into HDMI's frame format: no resampling, no effects. |
 | `SoundPreferredSampleRate` | `48000` | One rate from game to HDMI to receiver, so nothing resamples and nothing drifts. ITGmania's developers (another StepMania 5 fork) found that setting it explicitly cures a lot of music drift. |
-| `ThreadedInput` | `1` | Timestamp steps on arrival (the default; set to be sure). |
-| `Vsync` | `1` | Smooth scrolling. Judging doesn't depend on frames. |
+| `Vsync` | `1` | Smooth scrolling. In StepMania 5.1, judging doesn't depend on frames. |
 
 The installer merges these into `~/.project-outfox/Save/Preferences.ini` (via
 [`pi/outfox/apply-prefs.sh`](../pi/outfox/apply-prefs.sh)). OutFox has to be
@@ -248,8 +262,8 @@ These are where most of the unknown audio delay comes from.
   drive at 30 Hz. If OutFox
   can't hold a steady 60 fps (you see stutter), lower OutFox's own resolution to
   1280 × 720 first; heavy themes and background videos cost the most. A steady
-  frame rate matters more than resolution: judging doesn't depend on it, but
-  reading arrows does.
+  frame rate matters more than resolution: in StepMania 5.1 judging doesn't
+  depend on it, but reading arrows does.
 - **No desktop.** A desktop compositor sits between the game and the screen and
   can add a frame of delay. The setup below starts a bare X server that runs
   only OutFox.
@@ -289,9 +303,10 @@ go, and it is safe to run again.
    ```
 6. **Reboot** (`sudo reboot`). OutFox now starts on its own, and starts again if
    it's quit. For a shell, SSH in. If OutFox doesn't start,
-   `ldd ~/ProjectOutFox/*/OutFox | grep "not found"` lists libraries to
-   `apt install`.
-7. **Map the pads in OutFox** (its controller/key mapping screen): P1's arrows to
+   `ldd ~/ProjectOutFox/*/[Oo]ut[Ff]ox | grep "not found"` lists libraries to
+   `apt install` (the program is `OutFox` in some builds, `outfox` in others).
+7. **Map the pads in OutFox** (Options → Input & Calibration → Config Key/Joy
+   Mappings): P1's arrows to
    "pi-DDR P1" buttons 1–4, P2's to "pi-DDR P2" buttons 1–4, plus Start and Back
    (buttons 9 and 10).
 8. **Calibrate** (next section).
@@ -305,14 +320,15 @@ spot.
 
 1. **Lock the AV chain.** Set the receiver's input, sound mode and lip-sync, and
    the TV's picture mode. If you change any of them later, come back here.
-2. **Global Offset (audio + input), by ear.** Use OutFox's machine-sync
-   calibration (StepMania 5.1 calls it *Calibrate Machine Sync*). It plays a
-   steady beat, averages how early or late your steps land, and offers to save the
-   result as the Global Offset. Step to what you **hear**; close your eyes if the
-   arrows distract you. Run it two or three times until the suggested change is
-   within a few ms. During normal play, StepMania 5.1's Shift+F11 / Shift+F12 nudge
-   the Global Offset. Plain F11/F12 change *that song's* offset instead, which is
-   not what you want here.
+2. **Global Offset (audio + input), by ear.** Use Options → Input & Calibration
+   → Calibrate Audio Sync (StepMania 5.1 calls it *Calibrate Machine Sync*). It
+   plays a steady beat, averages how early or late your steps land, and offers to
+   save the result as the Global Offset. Step to what you **hear**; close your
+   eyes if the arrows distract you. Run it two or three times until the suggested
+   change is within a few ms. OutFox can also do this during a song: press F6
+   twice for AutoSync Machine. During normal play, StepMania 5.1's Shift+F11 /
+   Shift+F12 nudge the Global Offset. Plain F11/F12 change *that song's* offset
+   instead, which is not what you want here.
 3. **Visual Delay (video vs audio), by eye.** With the audio right, play a slow,
    steady song and watch whether arrows cross the targets on the beat.
    `VisualDelaySeconds` in Preferences.ini sets this (OutFox may also offer a
@@ -357,6 +373,10 @@ change.
   - `src/ScreenSyncOverlay.cpp`: F11/F12 sync keys.
   - OutFox is closed source and forked from this code. What this guide says about
     OutFox's internals is inferred from it; the checks above confirm it on the Pi.
+- **Project OutFox wiki** (source at github.com/TeamRizu/OutFox-Wiki, `content/`):
+  the Preferences.ini reference (`InputDrivers`, `UseOldJoystickMapping`,
+  `SoundDrivers`, `VisualDelaySeconds`), and the Getting started page (menu
+  names, the calibration screen, F6 AutoSync, song folders).
 - **Linux kernel**, `drivers/hid/usbhid/hid-core.c`: `jspoll` only applies to
   HID Joystick collections, and only when the device binds.
 - **ITGmania v1.1.0 release notes**: explicitly setting `SoundPreferredSampleRate`

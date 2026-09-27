@@ -11,6 +11,4 @@ SoundDrivers=ALSA-sw
 SoundDevice=hdmi:CARD=vc4hdmi0,DEV=0
 # One sample rate end to end: game, HDMI link and receiver all at 48 kHz.
 SoundPreferredSampleRate=48000
-# Read pads on their own thread so each step is timestamped when it arrives.
-ThreadedInput=1
 Vsync=1

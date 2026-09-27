@@ -68,11 +68,12 @@ This is a DIY home dance-game (DDR-style) setup:
 - New Pi-side steps go into `pi/install.sh` (directly or via a script it calls), so a fresh Pi is always one command away from playable.
 - Physical dimensions: inches first with metric in parentheses. They are based on the reference mat (32-3/4 × 36-5/8 × 3/8 in), always with the formula alongside.
 - SVG drawings need an explicit white background rect so they read on GitHub dark mode. Render them to check after editing: headless Chromium with a viewport about 100 px taller than the SVG.
-- Claims about OutFox internals are inferred from the StepMania 5.1 source (OutFox is closed). Say so where it matters, and cite the file.
+- For OutFox's preferences, menus and folders, check the OutFox wiki first: its source is readable at github.com/TeamRizu/OutFox-Wiki (`content/`), for example `content/user-guide/config/preferences.md`. Claims about OutFox internals beyond that are inferred from the StepMania 5.1 source (OutFox is closed). Say so where it matters, and cite the file.
 
 ## Not yet verified on hardware
 
-- OutFox (current Pi build) still uses `ALSA-sw`/`SoundDevice`/`SoundPreferredSampleRate`, the SM5.1 input enumeration, and `VisualDelaySeconds` as described.
+- OutFox's `ALSA-sw`/`SoundDevice`/`SoundPreferredSampleRate` and `VisualDelaySeconds` behave as described (the OutFox wiki documents them; nobody has tried them on the Pi).
+- OutFox's input on Linux: its wiki lists SDL as the default input driver (`InputDrivers`) and HIDAPI mode (`UseOldJoystickMapping=1`), not the SM5.1 evdev code the docs' input reasoning comes from. Check that it lists "pi-DDR P1" before "P2", sees buttons 1–11, and whether it judges steps at their arrival time.
 - The pad bridge on a real Pi 4: uinput creation, ordering retry, forwarding delay numbers.
 - The udev rule actually hides the raw mats from the game user (`MODE:="0600"`, `GROUP:="root"`, `TAG-="uaccess"` and `ENV{ID_INPUT_JOYSTICK}=""` at priority 65, surviving 99-com.rules).
 - The chosen mats report HID usage Joystick and can register LEFT+RIGHT jumps.

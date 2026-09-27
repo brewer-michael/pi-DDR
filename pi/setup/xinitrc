@@ -5,15 +5,16 @@
 #
 #   [ "$(tty)" = /dev/tty1 ] && exec startx "$HOME/pi-DDR/pi/setup/xinitrc" -- -nocursor
 #
-# Set OUTFOX_BIN if OutFox is not under ~/ProjectOutFox/<version>/OutFox.
+# Set OUTFOX_BIN if OutFox is not under ~/ProjectOutFox/<version>/.
 
 xset s off -dpms s noblank
 
 if [ -z "${OUTFOX_BIN:-}" ]; then
-    # The last match wins: with several versions unpacked, the sorted glob
-    # usually lists the newest last. Set OUTFOX_BIN to pin a version.
-    for candidate in "$HOME"/ProjectOutFox/*/OutFox "$HOME"/OutFox*/OutFox; do
-        if [ -x "$candidate" ]; then
+    # The program is "OutFox" in some builds and "outfox" in others. The last
+    # match wins: with several versions unpacked, the sorted glob usually lists
+    # the newest last. Set OUTFOX_BIN to pin a version.
+    for candidate in "$HOME"/ProjectOutFox/*/[Oo]ut[Ff]ox "$HOME"/OutFox*/[Oo]ut[Ff]ox; do
+        if [ -f "$candidate" ] && [ -x "$candidate" ]; then
             OUTFOX_BIN=$candidate
         fi
     done

@@ -64,8 +64,8 @@ fi
 
 step "Status"
 outfox=""
-for candidate in "$PLAYER_HOME"/ProjectOutFox/*/OutFox; do
-    if [ -x "$candidate" ]; then
+for candidate in "$PLAYER_HOME"/ProjectOutFox/*/[Oo]ut[Ff]ox; do
+    if [ -f "$candidate" ] && [ -x "$candidate" ]; then
         outfox=$candidate
     fi
 done
