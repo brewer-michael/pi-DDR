@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>pi-DDR</title>
+<meta name="description" content="A DIY two-player dance game: a plywood stage for two USB dance mats, a Raspberry Pi 4 running Project OutFox, your TV and a 5.1 receiver.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Barlow+Condensed:ital,wght@1,700;1,800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path class="mark-red" d="M16 2 22.5 9.5h-13z"/>
+        <path class="mark-red" d="M16 30 22.5 22.5h-13z"/>
+        <path class="mark-blue" d="M2 16 9.5 9.5v13z"/>
+        <path class="mark-blue" d="M30 16 22.5 9.5v13z"/>
+      </svg>
+      pi-DDR
+    </a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="build.html">Build</a>
+      <a href="play.html">Play</a>
+      <a href="songs.html">Songs</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">DIY two-player dance game</p>
+      <h1>Arcade-style dancing at home, run by a Raspberry&nbsp;Pi</h1>
+      <p class="lede">pi-DDR is a set of plans and Pi software for a home dance game: two
+        inexpensive USB dance mats on a plywood stage that holds them flat, a Raspberry Pi 4
+        running Project OutFox, your TV and a 5.1 surround receiver. Everything is tuned so your
+        steps, the music and the arrows line up.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="build.html">Start the build guide</a>
+        <a class="btn btn-quiet" href="https://github.com/brewer-michael/pi-DDR">Plans and code on GitHub</a>
+      </div>
+      <figure class="figure">
+        <a href="img/assembled.svg"><img src="img/assembled.svg" width="1000" height="760" alt="The assembled setup seen from behind the players: the two-module stage with both mats, a safety bar on P2, the mat cables running under a floor cover to the Pi beside the receiver under the TV, and the 5.1 speakers around the room."></a>
+        <figcaption>Seen from behind the players, facing the TV. Tap a drawing to open it full
+          size.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>What's in it</h2>
+      <div class="cols">
+        <div>
+          <h3>Game</h3>
+          <p>A Raspberry Pi 4 running Project OutFox, a free rhythm game built on StepMania. The Pi
+            boots straight into it, with no desktop in the way.</p>
+        </div>
+        <div>
+          <h3>Mats</h3>
+          <p>Two USB dance mats, one per player. A small service on the Pi keeps P1 on the left and
+            P2 on the right, even after a reboot or a replug.</p>
+        </div>
+        <div>
+          <h3>Stage</h3>
+          <p>Two plywood modules, 78 × 45-7/8 in (1976 × 1164 mm) together and 1-3/8 in (35 mm)
+            high. Each mat sits in a recessed bay on grippy underlay, so it can't slide or wrinkle.</p>
+        </div>
+        <div>
+          <h3>Sound</h3>
+          <p>The Pi sends plain stereo over HDMI. Your receiver upmixes it to 5.1 and passes the
+            picture on to the TV.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>What it costs</h2>
+      <p class="prose">Rough 2026 US prices. The TV and the 5.1 receiver are assumed to exist
+        already.</p>
+      <div class="table-wrap prose">
+        <table>
+          <thead>
+            <tr><th>Part</th><th class="num">Estimate</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Game computer: Pi 4, power supply, card, case, cables</td><td class="num">$145–190</td></tr>
+            <tr><td>Two dance mats</td><td class="num">$50–80</td></tr>
+            <tr><td>Stage: plywood, glue, screws, rug pads, paint</td><td class="num">about $210</td></tr>
+            <tr class="total"><td>Core total</td><td class="num">about $405–480</td></tr>
+            <tr><td>Safety bars, optional</td><td class="num">about $160</td></tr>
+            <tr><td>Optical audio adapter, only if the receiver has no HDMI input</td><td class="num">about $20</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose">A Pi 4 you already own brings the game computer down to about $90. Every
+        item, with notes on what to buy: <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/bill-of-materials.md">bill of materials</a>.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>How it keeps time</h2>
+      <div class="prose">
+        <p>A rhythm game is only fun when a step on the beat counts as on the beat. The setup keeps
+          every delay fixed, so one calibration cancels it, and keeps the part that changes from
+          step to step small.</p>
+        <ul>
+          <li><strong>1 ms mat polling.</strong> Cheap mats are usually read every 8 ms, which
+            blurs each step's timing by up to ±4 ms. The Pi reads them every 1 ms instead
+            (±0.5 ms), as long as the mat reports as a joystick. For scale, the best judgment in
+            StepMania's classic timing is ±22.5 ms.</li>
+          <li><strong>Nothing between the game and the HDMI port.</strong> No desktop and no sound
+            server: OutFox writes straight to the Pi's HDMI audio at 48 kHz.</li>
+          <li><strong>Two numbers to calibrate.</strong> The Global Offset cancels the receiver's
+            upmix delay and the mats' own delay. The Visual Delay lines the arrows up with the
+            TV's picture processing.</li>
+        </ul>
+      </div>
+      <figure class="figure">
+        <a href="img/signal-chain.svg"><img src="img/signal-chain.svg" width="1000" height="560" alt="Signal chain: the mats feed the Pi over USB, the pad bridge turns them into two fixed pads for OutFox, and OutFox sends stereo and video over HDMI to the receiver, which drives the 5.1 speakers and passes video to the TV. Tags mark which delays are fixed and which vary."></a>
+        <figcaption>Where the delay goes. The full reasoning is in the
+          <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md">latency and sync guide</a>.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Where it stands</h2>
+      <p>The plans and the Pi software are written, but nobody has built this or run it on a real
+        Pi yet. These are the first things to confirm:</p>
+      <ul class="checklist">
+        <li>OutFox's audio settings and sync calibration behave as described on the Pi.</li>
+        <li>OutFox lists the two pads in order, P1 then P2. On Linux it uses its own SDL input
+          driver, which the docs could only reason about.</li>
+        <li>The Pi hides the raw mats from the game, so it sees exactly two pads.</li>
+        <li>Your mats report as a joystick and register left+right jumps.</li>
+      </ul>
+      <p>If you build it, results are welcome as issues or pull requests on
+        <a href="https://github.com/brewer-michael/pi-DDR">GitHub</a>.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>Guides</h2>
+      <div class="guides">
+        <a class="guide" href="build.html"><strong>Build guide</strong>
+          <span>From buying parts to calibrating: the stage, the Pi and the AV setup, in order.</span></a>
+        <a class="guide" href="play.html"><strong>How to play</strong>
+          <span>Reading the arrows, judgments, difficulty, two-player modes and the sync keys.</span></a>
+        <a class="guide" href="songs.html"><strong>Songs</strong>
+          <span>Where to find songs you can use, and how to get them onto the Pi.</span></a>
+      </div>
+      <p class="prose more-docs">The full technical docs live in the repository:
+        <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/bill-of-materials.md">bill of materials</a>,
+        <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/platform-plans.md">platform plans</a> and
+        <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md">latency and sync</a>.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>pi-DDR is a DIY project. Plans, docs and the Pi software are on
+      <a href="https://github.com/brewer-michael/pi-DDR">GitHub</a>.</p>
+    <p>Project OutFox is made by Team Rizu. pi-DDR isn't affiliated with it, or with Konami's
+      Dance Dance Revolution.</p>
+  </div>
+</footer>
+</body>
+</html>

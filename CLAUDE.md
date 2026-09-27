@@ -44,6 +44,7 @@ This is a DIY home dance-game (DDR-style) setup:
 ## Repository layout
 
 - `docs/`: `bill-of-materials.md`, `platform-plans.md`, `latency-and-sync.md` (includes the Pi setup runbook). Drawings are SVGs written as plain text in `docs/img/`. `assembled.svg` is a 3D view of the whole setup; its header comment gives the projection, so its faces can be edited in inches.
+- `docs/*.html` + `docs/site.css`: the project website (home, build guide, how to play, songs). Plain HTML and CSS with no build step and no scripts; GitHub Pages serves `/docs`, and `docs/.nojekyll` stops it running Jekyll. Pages link to the markdown docs on GitHub (`blob/main`).
 - `hardware/bom.csv`: machine-readable BOM. **Keep it in sync with `docs/bill-of-materials.md`** (items, quantities, prices).
 - `pi/install.sh`: the one installer for the Pi (packages, system tuning, pad bridge, OutFox prefs, boot into the game). Safe to re-run; it calls the scripts below.
 - `pi/piddr/`: Python package, run on the Pi (needs python3-evdev). `evcodes` wraps `evdev.ecodes`; `mapping`, `timing`, `sysfs`, `config` hold the logic; `matprobe` and `padbridge` are the CLIs.
@@ -67,6 +68,7 @@ This is a DIY home dance-game (DDR-style) setup:
 - Shell scripts that run on the Pi are POSIX `sh` (no bashisms), idempotent, and must pass shellcheck.
 - New Pi-side steps go into `pi/install.sh` (directly or via a script it calls), so a fresh Pi is always one command away from playable.
 - Physical dimensions: inches first with metric in parentheses. They are based on the reference mat (32-3/4 × 36-5/8 × 3/8 in), always with the formula alongside.
+- The website summarizes the markdown docs. When a fact changes there (prices, dimensions, steps, commands, OutFox menu names), update the matching page too. Colours are CSS tokens in `site.css` with light and dark values; check pages at phone width (about 390 px) and in both themes.
 - SVG drawings need an explicit white background rect so they read on GitHub dark mode. Render them to check after editing: headless Chromium with a viewport about 100 px taller than the SVG.
 - For OutFox's preferences, menus and folders, check the OutFox wiki first: its source is readable at github.com/TeamRizu/OutFox-Wiki (`content/`), for example `content/user-guide/config/preferences.md`. Claims about OutFox internals beyond that are inferred from the StepMania 5.1 source (OutFox is closed). Say so where it matters, and cite the file.
 

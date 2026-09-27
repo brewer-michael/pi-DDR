@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Build guide · pi-DDR</title>
+<meta name="description" content="Step-by-step build guide for pi-DDR: buying parts, setting up the Raspberry Pi, building the two-module stage, connecting the TV and receiver, mapping the mats and calibrating.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Barlow+Condensed:ital,wght@1,700;1,800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path class="mark-red" d="M16 2 22.5 9.5h-13z"/>
+        <path class="mark-red" d="M16 30 22.5 22.5h-13z"/>
+        <path class="mark-blue" d="M2 16 9.5 9.5v13z"/>
+        <path class="mark-blue" d="M30 16 22.5 9.5v13z"/>
+      </svg>
+      pi-DDR
+    </a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="build.html" aria-current="page">Build</a>
+      <a href="play.html">Play</a>
+      <a href="songs.html">Songs</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Build guide</p>
+      <h1>Build it, step by step</h1>
+      <p class="lede">The stage, the Pi and the AV setup, in an order that saves trouble. Each
+        step links to the full plans for exact measurements and the reasons behind them.</p>
+      <dl class="facts">
+        <dt>Cost</dt>
+        <dd>about $405–480, plus about $160 for the optional safety bars</dd>
+        <dt>Floor space</dt>
+        <dd>78 × 45-7/8 in (1976 × 1164 mm) for the stage, plus room in front for the TV</dd>
+        <dt>Tools</dt>
+        <dd>circular saw and straightedge (or store cuts), drill/driver, countersink bit, jigsaw
+          or handsaw and chisel, sander, clamps, square; a router is nice to have</dd>
+        <dt>Also</dt>
+        <dd>a USB keyboard for setup, and another computer to reach the Pi over SSH</dd>
+      </dl>
+      <ul class="jump-list" aria-label="Steps">
+        <li><a href="#buy">1 Buy</a></li>
+        <li><a href="#pi">2 Pi and mats</a></li>
+        <li><a href="#size">3 Size</a></li>
+        <li><a href="#cut">4 Cut</a></li>
+        <li><a href="#build">5 Build</a></li>
+        <li><a href="#place">6 Place</a></li>
+        <li><a href="#bars">7 Safety bars</a></li>
+        <li><a href="#av">8 TV and receiver</a></li>
+        <li><a href="#map">9 Map the mats</a></li>
+        <li><a href="#calibrate">10 Calibrate</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <ol class="steps">
+      <li id="buy">
+        <div class="step-body prose">
+          <h2>Buy the parts</h2>
+          <p>The bill of materials lists every part with a price. Three things matter most:</p>
+          <ul>
+            <li><strong>Mats:</strong> two identical USB "PC" mats, bought from a shop with easy
+              returns. Avoid wireless mats, mats that act as a keyboard, and PS2 or Wii mats on
+              USB adapters.</li>
+            <li><strong>Pi 4:</strong> 2 GB runs OutFox; 4 GB leaves room for big song libraries.
+              Use the official 15 W power supply and a case with a heatsink or fan, because a
+              throttling Pi drops frames.</li>
+            <li><strong>Plywood:</strong> one 4 × 8 ft sheet of 3/4 in (18 mm) for the bases, and
+              one 4 × 4 ft sheet of 1/2 in (12 mm) for the borders if your mats are 3/8 in
+              (10 mm) thick.</li>
+          </ul>
+          <p><a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/bill-of-materials.md">Bill of materials</a></p>
+        </div>
+      </li>
+
+      <li id="pi">
+        <div class="step-body prose">
+          <h2>Set up the Pi and test the mats</h2>
+          <p>Do this the day the mats arrive, while you can still send them back.</p>
+          <ol>
+            <li>Flash <strong>Raspberry Pi OS Lite (64-bit)</strong> with Raspberry Pi Imager.
+              Set a user name, and turn on SSH and Wi-Fi.</li>
+            <li>Download OutFox's Raspberry Pi (arm64) build from
+              <a href="https://projectoutfox.com/downloads">projectoutfox.com</a> and unpack it
+              under <code>~/ProjectOutFox/</code>.</li>
+            <li>Get pi-DDR and run its installer:
+<pre><code>sudo apt update &amp;&amp; sudo apt full-upgrade -y &amp;&amp; sudo apt install -y git
+git clone https://github.com/brewer-michael/pi-DDR ~/pi-DDR
+sudo sh ~/pi-DDR/pi/install.sh</code></pre>
+              It installs what the game needs, sets 1 ms mat polling, full CPU speed and a
+              1080p60 picture, adds the pad bridge and the OutFox settings, and makes the Pi boot
+              straight into the game. It's safe to run again.</li>
+            <li>Plug both mats in and check them:
+<pre><code>cd ~/pi-DDR/pi
+sudo python3 -m piddr.matprobe list    # HID type and polling rate
+sudo python3 -m piddr.matprobe watch   # live steps, real polling rate, chatter</code></pre>
+            </li>
+          </ol>
+          <p>You want <strong>HID type: Joystick</strong>, because only those mats can be read every
+            1 ms, and no chatter (one step read as two). A "Gamepad" mat still works, with up to
+            ±4 ms more timing wobble.</p>
+          <p><a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md#setup-in-order">Setup, in order</a> ·
+            <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md#mat-polling">Mat polling</a></p>
+        </div>
+      </li>
+
+      <li id="size">
+        <div class="step-body prose">
+          <h2>Size the stage for your mats</h2>
+          <p>Lay each mat flat for a day, then measure its width <strong>W</strong> (left to right
+            as you stand on it), depth <strong>D</strong> (TV side to back) and thickness
+            <strong>T</strong>. The plans are drawn for a 32-3/4 × 36-5/8 × 3/8 in
+            (830 × 930 × 10 mm) mat.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Part</th><th>Formula</th><th class="num">Reference mat</th></tr></thead>
+              <tbody>
+                <tr><td>Bay width</td><td>W + 1/4 in</td><td class="num">33 in</td></tr>
+                <tr><td>Bay depth</td><td>D + 1/4 in</td><td class="num">36-7/8 in</td></tr>
+                <tr><td>Base width</td><td>bay width + 6 in</td><td class="num">39 in</td></tr>
+                <tr><td>Base depth</td><td>bay depth + 9 in</td><td class="num">45-7/8 in</td></tr>
+                <tr><td>Border thickness</td><td>T + underlay, rounded down to a plywood size</td><td class="num">1/2 in</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>That gives 1/8 in (3 mm) of clearance around each mat, 3 in (76 mm) borders at the
+            front and sides, and a 6 in (152 mm) border at the back, where players step on.</p>
+          <p><a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/platform-plans.md#1-measure-your-mats-and-size-the-stage">Sizing formulas and border stock table</a></p>
+        </div>
+      </li>
+
+      <li id="cut">
+        <div class="step-body">
+          <h2>Cut the parts</h2>
+          <div class="table-wrap prose">
+            <table>
+              <thead><tr><th>Part</th><th class="num">Qty</th><th>Size</th><th>Stock</th></tr></thead>
+              <tbody>
+                <tr><td>Base</td><td class="num">2</td><td>39 × 45-7/8 in</td><td>3/4 in plywood</td></tr>
+                <tr><td>Front border</td><td class="num">2</td><td>39 × 3 in</td><td>1/2 in plywood</td></tr>
+                <tr><td>Rear border</td><td class="num">2</td><td>39 × 6 in</td><td>1/2 in plywood</td></tr>
+                <tr><td>Side border</td><td class="num">4</td><td>36-7/8 × 3 in</td><td>1/2 in plywood</td></tr>
+                <tr><td>Underlay</td><td class="num">2</td><td>32-7/8 × 36-3/4 in</td><td>rug pad</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <figure class="figure narrow">
+            <a href="img/cut-layout.svg"><img src="img/cut-layout.svg" width="860" height="400" alt="Cut layout: both bases from one 4 by 8 foot sheet of 3/4 inch plywood, and all borders from one 4 by 4 foot sheet of 1/2 inch plywood."></a>
+            <figcaption>Both bases come out of one 4 × 8 ft sheet and the borders out of a 4 × 4 ft
+              sheet. Most home centers will make the long rip cuts on their panel saw if you ask.</figcaption>
+          </figure>
+        </div>
+      </li>
+
+      <li id="build">
+        <div class="step-body">
+          <h2>Build the two modules</h2>
+          <figure class="figure narrow">
+            <a href="img/stage-top.svg"><img src="img/stage-top.svg" width="820" height="660" alt="Top view of the two modules side by side: each mat in its bay, 3 inch borders at the front and sides, 6 inch borders at the rear, a cable notch in each front border, and the optional safety bar positions."></a>
+            <figcaption>Top view: P1 on the left, P2 on the right, the TV beyond the top edge.</figcaption>
+          </figure>
+          <ol class="prose">
+            <li>Label the parts P1 and P2 as you go, and sand everything to 120 grit.</li>
+            <li>Cut a 3/4 in (19 mm) notch through each front border where that mat's cable leaves
+              it, usually the middle.</li>
+            <li>Round the outer top edges of the borders (1/4 in roundover, or heavy sanding).
+              Just ease the inner edges that face the mat.</li>
+            <li>Dry-fit: lay the underlay and mat on the base, centred and 3 in from the front,
+              stand the borders around it with 1/8 in spacers, and trace their positions.</li>
+            <li>Glue and screw the front and rear borders, then the sides. Pre-drill and countersink
+              every 6–8 in, about 1-1/2 in in from the edges, and check the mat still drops in
+              before the glue sets.</li>
+            <li>Let it cure overnight, fill the screw holes and sand to 180 grit.</li>
+            <li>Paint the borders with floor paint and anti-skid additive, or use polyurethane and
+              anti-slip tape. Leave the bay bare, so the underlay grips the wood.</li>
+          </ol>
+          <figure class="figure narrow">
+            <a href="img/stage-section.svg"><img src="img/stage-section.svg" width="880" height="360" alt="Section through a side border: rug pad, 3/4 inch base, 1/2 inch border glued and screwed on, and the mat on its underlay with 1/8 inch clearance, level with the border top."></a>
+            <figcaption>The border is as thick as the mat plus its underlay, so the tops are level.</figcaption>
+          </figure>
+          <p class="prose"><a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/platform-plans.md#4-build-it">Full build steps</a></p>
+        </div>
+      </li>
+
+      <li id="place">
+        <div class="step-body prose">
+          <h2>Place the stage and fit the mats</h2>
+          <ol>
+            <li>Join the modules with a 4 in mending plate across the seam at the front and another
+              at the back.</li>
+            <li>Put the rubber-backed rug pad down, then the stage on top. If it rocks, add a
+              second layer of pad under the low corner.</li>
+            <li>Lay each underlay in its bay and press the mat in. It should lie flat with no more
+              than about 1/8 in of play.</li>
+            <li>Route each cable out through its notch, clip it to the front edge with a little
+              slack, and run both to the Pi under a floor cable cover.</li>
+            <li>Label the plugs P1 and P2, and the Pi ports they go into. The Pi tells the players
+              apart by which port each mat is in.</li>
+          </ol>
+        </div>
+      </li>
+
+      <li id="bars">
+        <div class="step-body prose">
+          <h2>Optional: add safety bars</h2>
+          <p>A bar behind each player, like on arcade machines, helps with balance on hard songs
+            and with recovering from a slip. Each one is 3/4 in black-iron pipe: two floor
+            flanges, two 30 in uprights, two elbows and a 30 in bar.</p>
+          <ol>
+            <li>Dry-assemble it and tighten it by hand. The flange centres end up about 31-1/2 in
+              (800 mm) apart.</li>
+            <li>Centre it on the rear border with the flange centres 3 in (76 mm) from the back
+              edge. Drill through border and base with a 9/32 in bit and countersink from
+              underneath, so the screw heads sit flush and the stage still sits flat.</li>
+            <li>Bolt it down with 1/4-20 flat-head screws, washers and nylon lock nuts, then wrap
+              the bar in grip tape.</li>
+          </ol>
+          <div class="note">
+            <span class="note-label">Balance, not hanging</span>
+            <p>The bar ends up about 31 in (790 mm) above the mat; use 36 in uprights for tall
+              players. Re-tighten the nuts every few months and keep small children off it.</p>
+          </div>
+        </div>
+      </li>
+
+      <li id="av">
+        <div class="step-body prose">
+          <h2>Connect the TV and receiver</h2>
+          <ul>
+            <li>Plug the Pi's <strong>HDMI0</strong> port (the one next to the USB-C power port)
+              into the receiver's HDMI input, and the receiver's HDMI output into the TV. Don't
+              send audio back from the TV over ARC.</li>
+            <li><strong>Receiver:</strong> auto lip-sync off, audio delay 0, video passthrough, and
+              one fixed upmix mode for this input, such as Dolby Surround, DTS Neural:X or
+              multi-channel stereo.</li>
+            <li><strong>TV:</strong> Game Mode, with motion smoothing off.</li>
+            <li>Switch the receiver and TV on before the Pi. HDMI audio only starts when the Pi sees
+              a display that accepts it.</li>
+          </ul>
+          <div class="note">
+            <span class="note-label">No HDMI input on the receiver?</span>
+            <p>Use a USB audio adapter with an optical output into the receiver, and a second HDMI
+              cable from the Pi to the TV.
+              <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md#if-the-receiver-has-no-hdmi-input">How to set it up</a></p>
+          </div>
+        </div>
+      </li>
+
+      <li id="map">
+        <div class="step-body prose">
+          <h2>Map the mats</h2>
+          <p>With each mat plugged into its labelled port:</p>
+<pre><code>cd ~/pi-DDR/pi
+sudo python3 -m piddr.matprobe learn --out /etc/pi-ddr/padbridge.conf
+sudo sh ~/pi-DDR/pi/install.sh
+sudo reboot</code></pre>
+          <p><code>learn</code> asks each player to step on the arrows and press Start, Back and
+            Select (Enter skips a button), then checks that left+right and up+down jumps
+            register. The installer then hides the raw mats from the game and starts the pad
+            bridge, which gives the game two fixed pads: "pi-DDR P1" and "pi-DDR P2".</p>
+          <p>After the reboot OutFox starts by itself. In <strong>Options → Input &amp; Calibration →
+            Config Key/Joy Mappings</strong>, map P1's arrows to "pi-DDR P1" buttons 1–4, P2's to
+            "pi-DDR P2" buttons 1–4, and Start and Back to buttons 9 and 10.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Button</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">9</th><th class="num">10</th><th class="num">11</th></tr></thead>
+              <tbody><tr><td>Control</td><td class="num">Left</td><td class="num">Down</td><td class="num">Up</td><td class="num">Right</td><td class="num">Start</td><td class="num">Back</td><td class="num">Select</td></tr></tbody>
+            </table>
+          </div>
+          <p>Buttons 5–8 are the corner panels, on mats that have them.
+            <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md#two-mats-stable-p1-and-p2">How the pad bridge works</a></p>
+        </div>
+      </li>
+
+      <li id="calibrate">
+        <div class="step-body prose">
+          <h2>Calibrate</h2>
+          <p>Do this last, standing on the stage, with the receiver and TV set the way you'll play.</p>
+          <ol>
+            <li><strong>Global Offset, by ear.</strong> Options → Input &amp; Calibration →
+              Calibrate Audio Sync plays a steady beat. Step to what you hear, not what you see;
+              close your eyes if it helps. Save the result, and repeat until the suggested change
+              is within a few ms.</li>
+            <li><strong>Visual Delay, by eye.</strong> Play a slow, steady song and watch whether
+              the arrows cross the targets on the beat. Adjust the visual delay until they do. The
+              TV usually lags the speakers, so expect a small negative value.</li>
+          </ol>
+          <p>Redo both whenever you change the receiver's sound mode or the TV's picture mode.</p>
+          <p><a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md#calibration">Calibration</a> ·
+            <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md#troubleshooting">Troubleshooting</a></p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>Next: <a href="play.html">how to play</a> and <a href="songs.html">getting songs</a>.</p>
+    <p>Project OutFox is made by Team Rizu. pi-DDR isn't affiliated with it, or with Konami's
+      Dance Dance Revolution.</p>
+  </div>
+</footer>
+</body>
+</html>
