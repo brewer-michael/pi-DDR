@@ -5,6 +5,9 @@
 #
 # Default target: ~/.project-outfox/Save/Preferences.ini. Run it as the user
 # who plays (not root) while OutFox is closed: OutFox rewrites the file on exit.
+# On a Pi set up by pi/install.sh the console autologin restarts OutFox as soon
+# as it quits, so stop that first: sudo systemctl stop getty@tty1 (and reboot
+# afterwards to play again). pi/install.sh does this for you.
 # Keys already present are replaced in place; missing ones are added to
 # [Options]. Everything else in the file is left alone. A backup is kept as
 # Preferences.ini.bak.
@@ -14,8 +17,10 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 SETTINGS=$HERE/pi-ddr.prefs
 TARGET=${1:-$HOME/.project-outfox/Save/Preferences.ini}
 
-if pgrep -x OutFox >/dev/null 2>&1; then
-    echo "OutFox is running; quit it first (it overwrites Preferences.ini on exit)." >&2
+# The program is "OutFox" in some builds and "outfox" in others.
+if pgrep -x -i outfox >/dev/null 2>&1; then
+    echo "OutFox is running, and it overwrites Preferences.ini when it exits." >&2
+    echo "Stop it first: sudo systemctl stop getty@tty1 (reboot afterwards to play)." >&2
     exit 1
 fi
 

@@ -43,8 +43,20 @@ step "Pad bridge"
 sh "$HERE/padbridge/install.sh"
 
 step "OutFox preferences"
+# OutFox rewrites Preferences.ini when it exits, and the console autologin
+# restarts it as soon as it quits, so end that session first. The summary at
+# the end says to reboot, which starts the game again.
+if pgrep -u "$PLAYER" -x -i outfox >/dev/null 2>&1; then
+    echo "Stopping the game on tty1 so its preferences can be updated."
+    systemctl stop getty@tty1.service
+    tries=0
+    while pgrep -u "$PLAYER" -x -i outfox >/dev/null 2>&1 && [ "$tries" -lt 15 ]; do
+        sleep 1
+        tries=$((tries + 1))
+    done
+fi
 if ! sudo -u "$PLAYER" -H sh "$HERE/outfox/apply-prefs.sh"; then
-    echo "Skipped. Quit OutFox, then run: sh $HERE/outfox/apply-prefs.sh" >&2
+    echo "Skipped. With OutFox stopped, run: sh $HERE/outfox/apply-prefs.sh" >&2
 fi
 
 step "Boot into the game"

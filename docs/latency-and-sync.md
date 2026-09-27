@@ -199,7 +199,8 @@ does the upmix. On the Pi, the chain is as short as it can be:
 
 The installer merges these into `~/.project-outfox/Save/Preferences.ini` (via
 [`pi/outfox/apply-prefs.sh`](../pi/outfox/apply-prefs.sh)). OutFox has to be
-closed at the time, because it rewrites that file when it exits. OutFox's preferences
+closed at the time, because it rewrites that file when it exits; on a re-run the
+installer stops the game for you. OutFox's preferences
 page also lists a driver called `alsa`. If `ALSA-sw` misbehaves, try it and
 calibrate again.
 
@@ -305,6 +306,9 @@ go, and it is safe to run again.
    it's quit. For a shell, SSH in. If OutFox doesn't start,
    `ldd ~/ProjectOutFox/*/[Oo]ut[Ff]ox | grep "not found"` lists libraries to
    `apt install` (the program is `OutFox` in some builds, `outfox` in others).
+   To stop the game, for example before editing Preferences.ini by hand (OutFox
+   rewrites it when it exits), run `sudo systemctl stop getty@tty1`. Reboot to
+   start it again.
 7. **Map the pads in OutFox** (Options → Input & Calibration → Config Key/Joy
    Mappings): P1's arrows to
    "pi-DDR P1" buttons 1–4, P2's to "pi-DDR P2" buttons 1–4, plus Start and Back
@@ -312,6 +316,7 @@ go, and it is safe to run again.
 8. **Calibrate** (next section).
 
 **Updating:** `cd ~/pi-DDR && git pull && sudo sh pi/install.sh`, then reboot.
+The installer stops the game while it updates OutFox's settings.
 
 ## Calibration
 
