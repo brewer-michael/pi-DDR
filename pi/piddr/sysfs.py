@@ -154,9 +154,18 @@ def describe_event_device(event_name, sys_root="/sys"):
 
 
 def input_sysname(event_name, sys_root="/sys"):
-    """The ``inputN`` node that owns ``eventN``; games sort devices by it."""
+    """The ``inputN`` node that owns ``eventN``."""
     link = os.path.join(sys_root, "class", "input", event_name, "device")
     return os.path.basename(os.path.realpath(link))
+
+
+def joystick_nodes(input_name, sys_root="/sys"):
+    """The classic joystick nodes (``jsN``) that the kernel's joydev made for ``inputN``."""
+    path = os.path.join(sys_root, "class", "input", input_name)
+    try:
+        return sorted(name for name in os.listdir(path) if name.startswith("js"))
+    except OSError:
+        return []
 
 
 def usbhid_jspoll(sys_root="/sys"):

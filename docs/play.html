@@ -144,7 +144,9 @@
         <p>Themes name the windows differently. DDR-style themes say Marvelous, Perfect, Great and
           Good; ITG-style ones say Fantastic, Excellent, Great, Decent and Way Off.</p>
         <p>For scale: a mat read every 8 ms adds up to ±4 ms of wobble to every step, a big share of
-          the ±22.5 ms best window. That's why the Pi reads the mats every 1 ms.</p>
+          the ±22.5 ms best window. That's why the Pi reads the mats every 1 ms. The game itself
+          reads them once per frame, which adds up to ±8.3 ms at 60 fps, so a steady frame rate
+          matters as much.</p>
       </div>
     </div>
   </section>

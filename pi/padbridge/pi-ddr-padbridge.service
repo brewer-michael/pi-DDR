@@ -1,9 +1,9 @@
 [Unit]
-Description=pi-DDR pad bridge (two mats -> stable virtual pads P1/P2)
+Description=pi-DDR pad bridge (two mats -> one virtual joystick, pi-DDR Stage)
 After=systemd-udevd.service
-# The virtual pads must exist before the game starts from the tty1 autologin.
-# Type=notify makes that ordering real: the bridge reports ready only after
-# it has created both pads.
+# The virtual stage must exist before the game starts from the tty1 autologin,
+# so OutFox finds it when it opens its joysticks. Type=notify makes that
+# ordering real: the bridge reports ready only after it has created it.
 Before=getty@tty1.service display-manager.service
 
 [Service]

@@ -9,12 +9,13 @@ from unittest import mock
 
 from piddr import evcodes, padbridge
 from piddr.config import parse_config
-from piddr.mapping import VIRTUAL_BUTTONS
-from piddr.padbridge import Bridge, notify_systemd, sorts_before
+from piddr.mapping import PLAYER_BUTTONS, STAGE_BUTTONS
+from piddr.padbridge import VIRTUAL_NAME, Bridge, notify_systemd
 
 AbsInfo = namedtuple("AbsInfo", "value min max fuzz flat resolution")
 KEY, SYN = evcodes.EV_KEY, evcodes.EV_SYN
-LEFT, RIGHT = VIRTUAL_BUTTONS["left"], VIRTUAL_BUTTONS["right"]
+LEFT, RIGHT = PLAYER_BUTTONS[1]["left"], PLAYER_BUTTONS[1]["right"]
+P2_LEFT, P2_UP = PLAYER_BUTTONS[2]["left"], PLAYER_BUTTONS[2]["up"]
 
 
 class Event(SimpleNamespace):
@@ -31,9 +32,9 @@ def report(*keys, t=100.0):
 
 
 class FakePad:
-    def __init__(self, name, input_n, event_n):
+    def __init__(self, name, events, event_n):
         self.name = name
-        self.sysnames = (f"input{input_n}", f"event{event_n}")
+        self.events = events
         self.device = SimpleNamespace(path=f"/dev/input/event{event_n}")
         self.sent = []
         self.closed = False
@@ -90,32 +91,14 @@ class FakeMat:
 
 
 class FakeEvdev:
-    """Hands out pads the way the kernel numbers them: input numbers only grow,
-    event numbers reuse the lowest free slot."""
-
     AbsInfo = AbsInfo
 
-    def __init__(self, next_input, next_event, mats=None):
-        self.next_input = next_input
-        self.free_from = next_event
-        self.used_events = set()
+    def __init__(self, mats=None):
         self.pads = []
         self.mats = mats or {}
 
     def UInput(self, events, name, vendor, product, version, bustype):
-        event_n = self.free_from
-        while event_n in self.used_events:
-            event_n += 1
-        self.used_events.add(event_n)
-        pad = FakePad(name, self.next_input, event_n)
-        self.next_input += 1
-        original_close = pad.close
-
-        def close():
-            self.used_events.discard(event_n)
-            original_close()
-
-        pad.close = close
+        pad = FakePad(name, events, 20 + len(self.pads))
         self.pads.append(pad)
         return pad
 
@@ -135,8 +118,8 @@ class FakeSelector:
 
 
 class TestBridge(Bridge):
-    def _sysnames(self, pad):
-        return pad.sysnames
+    def _joystick_nodes(self, stage):
+        return ["js0"]
 
 
 def make_bridge(evdev, config_text):
@@ -144,27 +127,6 @@ def make_bridge(evdev, config_text):
     bridge = TestBridge(parse_config(config_text), evdev, log=logs.append, selector=FakeSelector())
     bridge.logs = logs
     return bridge
-
-
-class OrderTest(unittest.TestCase):
-    def test_sorts_before(self):
-        self.assertTrue(sorts_before("input8", "input9"))
-        self.assertFalse(sorts_before("input9", "input10"))  # right by number, wrong as text
-        self.assertTrue(sorts_before("input10", "input11"))
-        self.assertFalse(sorts_before("event3", "event2"))
-
-    def test_retries_until_p1_sorts_first(self):
-        for next_input, next_event in ((5, 3), (9, 3), (8, 9), (99, 9)):
-            fake = FakeEvdev(next_input, next_event)
-            bridge = make_bridge(fake, CONFIG.format(p1="/x", p2="/y"))
-            pads = bridge.create_pads()
-            p1, p2 = pads[1].sysnames, pads[2].sysnames
-            for a, b in zip(p1, p2):
-                self.assertTrue(sorts_before(a, b), (next_input, next_event, p1, p2))
-            self.assertEqual(pads[1].name, "pi-DDR P1")
-            placeholders = [p for p in fake.pads if p.name == "pi-DDR placeholder"]
-            self.assertTrue(all(p.closed for p in placeholders))
-            self.assertFalse(pads[1].closed or pads[2].closed)
 
 
 CONFIG = """
@@ -196,11 +158,25 @@ class ForwardingTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def start(self, mat):
-        fake = FakeEvdev(20, 5, mats={self.p1_path: mat})
-        bridge = make_bridge(fake, CONFIG.format(p1=self.p1_path, p2=self.p2_path))
+    def start(self, mat, p2_mat=None):
+        mats = {self.p1_path: mat}
+        if p2_mat is not None:
+            open(self.p2_path, "w").close()
+            mats[self.p2_path] = p2_mat
+        self.fake = FakeEvdev(mats=mats)
+        bridge = make_bridge(self.fake, CONFIG.format(p1=self.p1_path, p2=self.p2_path))
         bridge.start()
         return bridge
+
+    def test_one_stage_for_both_players(self):
+        bridge = self.start(FakeMat(self.p1_path))
+        self.assertEqual(len(self.fake.pads), 1)
+        stage = self.fake.pads[0]
+        self.assertEqual(stage.name, VIRTUAL_NAME)
+        self.assertEqual(stage.events[KEY], list(STAGE_BUTTONS))
+        self.assertEqual([code for code, _ in stage.events[evcodes.EV_ABS]], [evcodes.ABS_X, evcodes.ABS_Y])
+        self.assertTrue(all(player.pad is stage for player in bridge.players))
+        self.assertTrue(any("virtual stage ready" in line and "js0" in line for line in bridge.logs))
 
     def test_forwards_reports_and_keeps_jumps_together(self):
         mat = FakeMat(self.p1_path)
@@ -211,15 +187,39 @@ class ForwardingTest(unittest.TestCase):
         self.assertFalse(bridge.connect(p2))  # P2's mat is not plugged in
         mat.queue = report((0x120, 1), (0x123, 1))
         bridge.pump(p1)
-        self.assertEqual(p1.pad.sent, [(LEFT, 1), (RIGHT, 1), "syn"])
-        self.assertEqual(p2.pad.sent, [])
+        self.assertEqual(bridge.pad.sent, [(LEFT, 1), (RIGHT, 1), "syn"])
         self.assertEqual(bridge.delays.count, 1)
+
+    def test_player_two_drives_its_own_buttons(self):
+        mat1, mat2 = FakeMat(self.p1_path), FakeMat(self.p2_path)
+        bridge = self.start(mat1, mat2)
+        p1, p2 = bridge.players
+        self.assertTrue(bridge.connect(p1) and bridge.connect(p2))
+        mat2.queue = report((0x120, 1), (0x122, 1))
+        bridge.pump(p2)
+        self.assertEqual(bridge.pad.sent, [(P2_LEFT, 1), (P2_UP, 1), "syn"])
+
+    def test_unplugging_one_mat_leaves_the_other_player_alone(self):
+        mat1, mat2 = FakeMat(self.p1_path), FakeMat(self.p2_path)
+        bridge = self.start(mat1, mat2)
+        p1, p2 = bridge.players
+        bridge.connect(p1)
+        bridge.connect(p2)
+        mat1.queue = report((0x120, 1))
+        mat2.queue = report((0x120, 1))
+        bridge.pump(p1)
+        bridge.pump(p2)
+        mat1.fail = errno.ENODEV
+        bridge.pump(p1)
+        self.assertEqual(bridge.pad.sent[-2:], [(LEFT, 0), "syn"])
+        self.assertNotIn((P2_LEFT, 0), bridge.pad.sent)
+        self.assertEqual(p2.mapper.held(), {"left"})
 
     def test_already_held_arrow_is_sent_on_connect(self):
         mat = FakeMat(self.p1_path, keys=[0x120])
         bridge = self.start(mat)
         bridge.connect(bridge.players[0])
-        self.assertEqual(bridge.players[0].pad.sent, [(LEFT, 1), "syn"])
+        self.assertEqual(bridge.pad.sent, [(LEFT, 1), "syn"])
 
     def test_unplug_releases_held_arrows(self):
         mat = FakeMat(self.p1_path)
@@ -297,10 +297,11 @@ class ForwardingTest(unittest.TestCase):
         bridge.connect(p1)
         mat.queue = report((0x121, 1))
         bridge.pump(p1)
-        pads = list(bridge.pads.values())
+        stage = bridge.pad
         bridge.close()
-        self.assertEqual(p1.pad.sent[-2:], [(VIRTUAL_BUTTONS["down"], 0), "syn"])
-        self.assertTrue(all(p.closed for p in pads))
+        self.assertEqual(stage.sent[-2:], [(PLAYER_BUTTONS[1]["down"], 0), "syn"])
+        self.assertTrue(stage.closed)
+        self.assertIsNone(bridge.pad)
 
 
 class NotifyTest(unittest.TestCase):

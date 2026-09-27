@@ -119,6 +119,10 @@
             blurs each step's timing by up to ±4 ms. The Pi reads them every 1 ms instead
             (±0.5 ms), as long as the mat reports as a joystick. For scale, the best judgment in
             StepMania's classic timing is ±22.5 ms.</li>
+          <li><strong>A steady frame rate.</strong> OutFox reads the mats once per frame, so at
+            60 fps a step waits up to 16.7 ms to be counted. Calibration cancels the average;
+            what's left is ±8.3 ms, as long as no frames are dropped. So the Pi boots straight
+            into the game, runs at full clock and stays cool.</li>
           <li><strong>Nothing between the game and the HDMI port.</strong> No desktop and no sound
             server: OutFox writes straight to the Pi's HDMI audio at 48 kHz.</li>
           <li><strong>Two numbers to calibrate.</strong> The Global Offset cancels the receiver's
@@ -127,7 +131,7 @@
         </ul>
       </div>
       <figure class="figure">
-        <a href="img/signal-chain.svg"><img src="img/signal-chain.svg" width="1000" height="560" alt="Signal chain: the mats feed the Pi over USB, the pad bridge turns them into two fixed pads for OutFox, and OutFox sends stereo and video over HDMI to the receiver, which drives the 5.1 speakers and passes video to the TV. Tags mark which delays are fixed and which vary."></a>
+        <a href="img/signal-chain.svg"><img src="img/signal-chain.svg" width="1000" height="560" alt="Signal chain: the mats feed the Pi over USB, the pad bridge combines them into one virtual joystick for OutFox, which reads it once per frame, and OutFox sends stereo and video over HDMI to the receiver, which drives the 5.1 speakers and passes video to the TV. Tags mark which delays are fixed and which vary."></a>
         <figcaption>Where the delay goes. The full reasoning is in the
           <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md">latency and sync guide</a>.</figcaption>
       </figure>
@@ -141,9 +145,10 @@
         Pi yet. These are the first things to confirm:</p>
       <ul class="checklist">
         <li>OutFox's audio settings and sync calibration behave as described on the Pi.</li>
-        <li>OutFox lists the two pads in order, P1 then P2. On Linux it uses its own SDL input
-          driver, which the docs could only reason about.</li>
-        <li>The Pi hides the raw mats from the game, so it sees exactly two pads.</li>
+        <li>OutFox sees one joystick, "pi-DDR Stage", with P1 on buttons 1–11 and P2 on 12–22.
+          The design follows OutFox's own Pi program, but nobody has played on it yet.</li>
+        <li>The Pi hides the raw mats from the game, so the stage is its only joystick.</li>
+        <li>OutFox holds a steady 60 fps on a Pi 4 at 1080p.</li>
         <li>Your mats report as a joystick and register left+right jumps.</li>
       </ul>
       <p>If you build it, results are welcome as issues or pull requests on

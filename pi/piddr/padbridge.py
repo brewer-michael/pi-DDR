@@ -1,11 +1,13 @@
-"""pi-DDR pad bridge: two physical mats in, two stable virtual pads out.
+"""pi-DDR pad bridge: two physical mats in, one virtual stage out.
 
-OutFox (like the StepMania 5.1 code it grew from) numbers pads in the order
-Linux registered them. A replug, or a different boot order, can swap P1 and
-P2. This daemon creates the virtual pads "pi-DDR P1" and "pi-DDR P2" at boot,
-always in that order, and feeds each from the mat in one fixed USB port. The
-virtual pads never go away, so the game's numbering stays put even when a mat
-is unplugged mid-song.
+OutFox reads joysticks through SDL and names them Joy1, Joy2, ... in the
+order it opens them, which follows the order Linux registered the devices.
+Two identical mats can therefore swap between boots, and a replugged mat
+comes back as a new device. This daemon hides the raw mats and gives the game
+a single virtual joystick, "pi-DDR Stage": P1's mat drives buttons 1-11 and
+P2's mat buttons 12-22, each taken from one fixed USB port. Which player is
+which is decided by button number, so device order never matters, and the
+stage never goes away, even when a mat is unplugged mid-song.
 
 Runs as the systemd service pi-ddr-padbridge (see pi/padbridge/).
 """
@@ -25,37 +27,21 @@ import evdev
 
 from . import evcodes, sysfs
 from .config import ConfigError, load_config, udev_rules
-from .mapping import VIRTUAL_BUTTONS, Mapper
+from .mapping import STAGE_BUTTONS, Mapper
 from .timing import DelayStats
 
 DEFAULT_CONFIG = "/etc/pi-ddr/padbridge.conf"
-VIRTUAL_VENDOR = 0x1209  # pid.codes vendor; these devices never appear on a real bus
-VIRTUAL_PRODUCTS = {1: 0x0001, 2: 0x0002}
-PLACEHOLDER_PRODUCT = 0x0003
-VIRTUAL_NAME = "pi-DDR P{}"
+VIRTUAL_VENDOR = 0x1209  # pid.codes vendor; this device never appears on a real bus
+VIRTUAL_PRODUCT = 0x0001
+VIRTUAL_NAME = "pi-DDR Stage"
 RESCAN_INTERVAL = 1.0
-MAX_ORDER_ATTEMPTS = 8
-
-
-def _trailing_number(name):
-    digits = name[len(name.rstrip("0123456789")) :]
-    return int(digits) if digits else -1
-
-
-def sorts_before(a, b):
-    """True if sysfs name ``a`` comes first both as text and as a number.
-
-    Games sort ``input9`` after ``input10`` when they compare names as text,
-    so the P1 pad must win under both orderings.
-    """
-    return a < b and _trailing_number(a) < _trailing_number(b)
 
 
 def notify_systemd(message=b"READY=1"):
-    """Tell systemd (Type=notify) the virtual pads exist. No-op outside systemd.
+    """Tell systemd (Type=notify) the virtual stage exists. No-op outside systemd.
 
-    The unit orders the tty1 autologin that starts the game after this, and
-    OutFox only looks for pads when it starts.
+    The unit orders the tty1 autologin that starts the game after this, so the
+    stage is already there when OutFox opens its joysticks at startup.
     """
     address = os.environ.get("NOTIFY_SOCKET")
     if not address:
@@ -78,8 +64,8 @@ def _close_quietly(dev):
 class Player:
     def __init__(self, config, pad, release_debounce):
         self.config = config
-        self.pad = pad
-        self.mapper = Mapper(config.mapping, release_debounce=release_debounce)
+        self.pad = pad  # the shared virtual stage
+        self.mapper = Mapper(config.mapping, release_debounce=release_debounce, player=config.number)
         self.dev = None
         self.dropped = False
         self.last_note = None
@@ -99,48 +85,35 @@ class Bridge:
         self.wallclock = wallclock
         self.delays = DelayStats()
         self.players = []
-        self.pads = {}
+        self.pad = None
         self.stop_requested = False
         self.stats_requested = False
         self._warned_ports = set()
         self._last_links = None
 
-    # -- virtual pads -------------------------------------------------------
+    # -- the virtual stage ---------------------------------------------------
 
-    def _new_pad(self, name, product):
+    def create_stage(self):
+        """Create the one joystick the game sees, with both players' buttons."""
         axis = self.evdev.AbsInfo(value=0, min=-1, max=1, fuzz=0, flat=0, resolution=0)
         events = {
-            evcodes.EV_KEY: sorted(VIRTUAL_BUTTONS.values()),
-            # OutFox's Linux input code (from StepMania 5.1) ignores devices
-            # without an X axis, so the pads carry two idle axes.
+            evcodes.EV_KEY: list(STAGE_BUTTONS),
+            # Two idle axes: SDL's own check (SDL_EVDEV_GuessDeviceClass) only
+            # counts an input device as a joystick if it has ABS_X and ABS_Y.
+            # With them, udev, the kernel's joydev and SDL all agree it is one.
             evcodes.EV_ABS: [(evcodes.ABS_X, axis), (evcodes.ABS_Y, axis)],
         }
-        return self.evdev.UInput(
-            events, name=name, vendor=VIRTUAL_VENDOR, product=product, version=1, bustype=evcodes.BUS_USB
+        stage = self.evdev.UInput(
+            events, name=VIRTUAL_NAME, vendor=VIRTUAL_VENDOR, product=VIRTUAL_PRODUCT, version=1, bustype=evcodes.BUS_USB
         )
+        nodes = [os.path.basename(stage.device.path), *self._joystick_nodes(stage)]
+        self.log(f"virtual stage ready: {VIRTUAL_NAME!r} ({', '.join(nodes)})")
+        return stage
 
-    def _sysnames(self, pad):
-        event = os.path.basename(pad.device.path)
-        return (sysfs.input_sysname(event), event)
-
-    def create_pads(self):
-        """Create P1 then P2, retrying until P1 sorts first by every rule."""
-        placeholders = []
-        try:
-            for _ in range(MAX_ORDER_ATTEMPTS):
-                pads = {n: self._new_pad(VIRTUAL_NAME.format(n), VIRTUAL_PRODUCTS[n]) for n in (1, 2)}
-                names = {n: self._sysnames(pad) for n, pad in pads.items()}
-                if all(sorts_before(a, b) for a, b in zip(names[1], names[2])):
-                    self.log(f"virtual pads ready: P1={'/'.join(names[1])} P2={'/'.join(names[2])}")
-                    return pads
-                for pad in pads.values():
-                    pad.close()
-                # Hold the next numbers so the retry lands on same-length names.
-                placeholders.append(self._new_pad("pi-DDR placeholder", PLACEHOLDER_PRODUCT))
-            raise RuntimeError("could not create the virtual pads in P1, P2 order")
-        finally:
-            for placeholder in placeholders:
-                placeholder.close()
+    def _joystick_nodes(self, stage):
+        """The classic joystick node (jsN) of the stage, which OutFox reads by default."""
+        event = os.path.basename(stage.device.path)
+        return sysfs.joystick_nodes(sysfs.input_sysname(event))
 
     # -- physical mats ------------------------------------------------------
 
@@ -265,9 +238,9 @@ class Bridge:
     # -- main loop ----------------------------------------------------------
 
     def start(self):
-        self.pads = self.create_pads()
+        self.pad = self.create_stage()
         debounce = self.config.release_debounce_ms / 1000.0
-        self.players = [Player(cfg, self.pads[cfg.number], debounce) for cfg in self.config.players]
+        self.players = [Player(cfg, self.pad, debounce) for cfg in self.config.players]
 
     def run(self):
         self.start()
@@ -294,7 +267,7 @@ class Bridge:
                 self._send(player, player.mapper.expire(now))
             if self.stats_requested or now >= next_stats:
                 self.stats_requested = False
-                self.log(f"forwarding delay (mat report to virtual pad): {self.delays.summary()}")
+                self.log(f"forwarding delay (mat report to virtual stage): {self.delays.summary()}")
                 next_stats = now + interval if interval > 0 else float("inf")
         self.close()
 
@@ -304,15 +277,15 @@ class Bridge:
             if player.dev is not None:
                 _close_quietly(player.dev)
                 player.dev = None
-        for pad in self.pads.values():
-            pad.close()
-        self.pads = {}
+        if self.pad is not None:
+            self.pad.close()
+            self.pad = None
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="python3 -m piddr.padbridge",
-        description="Expose two USB dance mats as stable virtual pads 'pi-DDR P1' and 'pi-DDR P2'.",
+        description="Expose two USB dance mats to the game as one virtual joystick, 'pi-DDR Stage'.",
     )
     parser.add_argument("--config", default=DEFAULT_CONFIG, help=f"config file (default {DEFAULT_CONFIG})")
     parser.add_argument("--check", action="store_true", help="validate the config and exit")

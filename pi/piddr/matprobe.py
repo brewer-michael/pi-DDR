@@ -61,7 +61,7 @@ def is_virtual_pad(dev):
 
 
 def open_controllers(paths=None, include_virtual=False):
-    """Open the given devices, or every game controller except our virtual pads."""
+    """Open the given devices, or every game controller except our virtual stage."""
     opened, denied = [], []
     for path in paths or sorted(evdev.list_devices(), key=_natural_key):
         try:
@@ -150,7 +150,7 @@ def cmd_list(args):
         return 1
     for dev in devices:
         if is_virtual_pad(dev):
-            print(f"{dev.path}  {dev.name!r}  virtual pad from pi-ddr-padbridge (this is what the game uses)\n")
+            print(f"{dev.path}  {dev.name!r}  virtual stage from pi-ddr-padbridge (this is what the game uses)\n")
         else:
             print("\n".join(describe(dev, links, jspoll)) + "\n")
         dev.close()

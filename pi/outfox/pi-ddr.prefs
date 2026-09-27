@@ -12,3 +12,10 @@ SoundDevice=hdmi:CARD=vc4hdmi0,DEV=0
 # One sample rate end to end: game, HDMI link and receiver all at 48 kHz.
 SoundPreferredSampleRate=48000
 Vsync=1
+# Read pads as plain SDL joysticks (OutFox's "HIDAPI"/legacy mode, also its
+# default): every button of the virtual stage keeps its own number. XInput mode
+# would need a gamepad layout, which a 22-button stage doesn't have.
+UseOldJoystickMapping=1
+# Keep the key map when the set of joysticks changes. OutFox's own Keymaps
+# guide says to turn automapping off so a custom mapping isn't overwritten.
+AutoMapOnJoyChange=0

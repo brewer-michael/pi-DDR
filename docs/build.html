@@ -271,17 +271,27 @@ sudo reboot</code></pre>
           <p><code>learn</code> asks each player to step on the arrows and press Start, Back and
             Select (Enter skips a button), then checks that left+right and up+down jumps
             register. The installer then hides the raw mats from the game and starts the pad
-            bridge, which gives the game two fixed pads: "pi-DDR P1" and "pi-DDR P2".</p>
+            bridge. It turns both mats into one joystick, "pi-DDR Stage": P1's mat presses
+            buttons 1–11 and P2's presses 12–22, so the players can't swap.</p>
           <p>After the reboot OutFox starts by itself. In <strong>Options → Input &amp; Calibration →
-            Config Key/Joy Mappings</strong>, map P1's arrows to "pi-DDR P1" buttons 1–4, P2's to
-            "pi-DDR P2" buttons 1–4, and Start and Back to buttons 9 and 10.</p>
+            Config Key/Joy Mappings</strong>, choose each P1 entry and step on that arrow on the P1
+            mat, then do the same for P2. Map Start and Back too.</p>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Button</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">9</th><th class="num">10</th><th class="num">11</th></tr></thead>
-              <tbody><tr><td>Control</td><td class="num">Left</td><td class="num">Down</td><td class="num">Up</td><td class="num">Right</td><td class="num">Start</td><td class="num">Back</td><td class="num">Select</td></tr></tbody>
+              <thead><tr><th>Control</th><th class="num">P1 button</th><th class="num">P2 button</th></tr></thead>
+              <tbody>
+                <tr><td>Left</td><td class="num">1</td><td class="num">12</td></tr>
+                <tr><td>Down</td><td class="num">2</td><td class="num">13</td></tr>
+                <tr><td>Up</td><td class="num">3</td><td class="num">14</td></tr>
+                <tr><td>Right</td><td class="num">4</td><td class="num">15</td></tr>
+                <tr><td>Start</td><td class="num">9</td><td class="num">20</td></tr>
+                <tr><td>Back</td><td class="num">10</td><td class="num">21</td></tr>
+                <tr><td>Select</td><td class="num">11</td><td class="num">22</td></tr>
+              </tbody>
             </table>
           </div>
-          <p>Buttons 5–8 are the corner panels, on mats that have them.
+          <p>Buttons 5–8 (P2: 16–19) are the corner panels, on mats that have them. Keep other
+            game controllers unplugged when the game starts, so the stage stays joystick 1.
             <a href="https://github.com/brewer-michael/pi-DDR/blob/main/docs/latency-and-sync.md#two-mats-stable-p1-and-p2">How the pad bridge works</a></p>
         </div>
       </li>

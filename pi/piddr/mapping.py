@@ -1,7 +1,8 @@
-"""Translate a physical mat's raw events into the virtual pad's buttons.
+"""Translate a physical mat's raw events into buttons of the virtual stage.
 
-Every virtual pad exposes the same fixed buttons, so the game's key mapping
-is identical for P1 and P2 and survives swapping a mat for a different model.
+The game sees one virtual joystick, "pi-DDR Stage", for both mats. P1's
+controls are its buttons 1-11 and P2's are buttons 12-22, whatever the mats
+report, so the game's key mapping survives swapping a mat for another model.
 Only the bridge config (which raw input is which arrow) changes.
 """
 
@@ -9,8 +10,8 @@ from dataclasses import dataclass
 
 from . import evcodes
 
-# Order is part of the contract: control i is sent as BTN_JOYSTICK + i, which
-# StepMania-family engines (OutFox included) show as joystick button i + 1.
+# Order is part of the contract: control i of player n is button
+# (n - 1) * 11 + i + 1 of the stage in the game.
 CONTROLS = (
     "left",
     "down",
@@ -25,7 +26,20 @@ CONTROLS = (
     "select",
 )
 REQUIRED_CONTROLS = ("left", "down", "up", "right")
-VIRTUAL_BUTTONS = {name: evcodes.BTN_JOYSTICK + i for i, name in enumerate(CONTROLS)}
+
+# Linux numbers a joystick's buttons by ascending event code from BTN_JOYSTICK
+# up (joydev's button map, and SDL's evdev backend, which OutFox reads pads
+# through). So P1 takes BTN_JOYSTICK + i and P2 the BTN_TRIGGER_HAPPY codes,
+# which come next in that order: generic "extra button" codes that no gamepad
+# layout gives a meaning to.
+BUTTON_BASE = {1: evcodes.BTN_JOYSTICK, 2: evcodes.BTN_TRIGGER_HAPPY1}
+PLAYER_BUTTONS = {n: {name: base + i for i, name in enumerate(CONTROLS)} for n, base in BUTTON_BASE.items()}
+STAGE_BUTTONS = tuple(sorted(code for buttons in PLAYER_BUTTONS.values() for code in buttons.values()))
+
+
+def game_button(player, control):
+    """The joystick button number (1-based) the game shows for a control."""
+    return (player - 1) * len(CONTROLS) + CONTROLS.index(control) + 1
 
 # An axis counts as pressed past half of its travel from the centre.
 AXIS_THRESHOLD = 0.5
@@ -77,7 +91,7 @@ def axis_pressed(value, lo, hi, direction):
 
 
 class Mapper:
-    """Raw events of one mat in, virtual button changes out.
+    """Raw events of one mat in, stage button changes out.
 
     Feed every raw event with ``feed()`` and call ``flush()`` at each
     SYN_REPORT, so arrows pressed in the same USB report (a jump) reach the
@@ -88,7 +102,8 @@ class Mapper:
     Presses are never delayed.
     """
 
-    def __init__(self, mapping, abs_ranges=None, release_debounce=0.0):
+    def __init__(self, mapping, abs_ranges=None, release_debounce=0.0, player=1):
+        self._buttons = PLAYER_BUTTONS[player]
         self._mapping = {c: tuple(s) for c, s in mapping.items() if s}
         unknown = set(self._mapping) - set(CONTROLS)
         if unknown:
@@ -141,13 +156,13 @@ class Mapper:
                     continue  # pressed again inside the window: the game never saw a release
                 if not self._sent[control]:
                     self._sent[control] = True
-                    changes.append((VIRTUAL_BUTTONS[control], 1))
+                    changes.append((self._buttons[control], 1))
             elif self._sent[control] and control not in self._pending:
                 if self._debounce > 0:
                     self._pending[control] = now + self._debounce
                 else:
                     self._sent[control] = False
-                    changes.append((VIRTUAL_BUTTONS[control], 0))
+                    changes.append((self._buttons[control], 0))
         return changes
 
     def expire(self, now):
@@ -157,7 +172,7 @@ class Mapper:
             if due <= now:
                 del self._pending[control]
                 self._sent[control] = False
-                changes.append((VIRTUAL_BUTTONS[control], 0))
+                changes.append((self._buttons[control], 0))
         return changes
 
     def next_deadline(self):
@@ -174,6 +189,6 @@ class Mapper:
         self._keys.clear()
         self._abs.clear()
         self._pending.clear()
-        changes = [(VIRTUAL_BUTTONS[c], 0) for c, held in self._sent.items() if held]
+        changes = [(self._buttons[c], 0) for c, held in self._sent.items() if held]
         self._sent = dict.fromkeys(self._sent, False)
         return changes

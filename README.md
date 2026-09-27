@@ -42,7 +42,7 @@ sudo sh ~/pi-DDR/pi/install.sh
 | [`pi/install.sh`](pi/install.sh) | The installer: packages, system tuning, pad bridge, OutFox preferences, boot into the game. |
 | [`pi/setup/configure-pi.sh`](pi/setup/configure-pi.sh) | System tuning: 1 ms mat polling, CPU at full clock, audio thread priority, pinned HDMI mode. |
 | [`pi/piddr/matprobe.py`](pi/piddr/matprobe.py) | Checks mats (HID type, real polling rate, chatter, jumps) and writes the pad bridge config. |
-| [`pi/piddr/padbridge.py`](pi/piddr/padbridge.py) + [`pi/padbridge/`](pi/padbridge/) | Service that presents the mats to the game as two fixed virtual pads, so P1 and P2 never swap. |
+| [`pi/piddr/padbridge.py`](pi/piddr/padbridge.py) + [`pi/padbridge/`](pi/padbridge/) | Service that presents both mats to the game as one virtual joystick, "pi-DDR Stage" (P1 on buttons 1–11, P2 on 12–22), so the players never swap. |
 | [`pi/outfox/`](pi/outfox/) | Recommended OutFox audio and input preferences, and the script that merges them in. |
 | [`pi/setup/xinitrc`](pi/setup/xinitrc) | Boots straight into OutFox on a bare X server. |
 

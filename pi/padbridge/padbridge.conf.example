@@ -7,7 +7,7 @@
 
 [bridge]
 # USB vendor:product of the raw mats. The udev rule built from this hides the
-# raw mats from the game so it only sees the virtual pads 'pi-DDR P1'/'P2'.
+# raw mats from the game so it only sees the virtual stage, 'pi-DDR Stage'.
 mat_ids = 0079:0011
 # Hold back releases this long to swallow contact chatter (0 = off).
 # Presses are never delayed. Try 10-20 if `matprobe watch` reports chatter.

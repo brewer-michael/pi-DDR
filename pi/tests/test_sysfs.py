@@ -87,6 +87,14 @@ class DescribeDeviceTest(unittest.TestCase):
             self.assertIsNone(info["usb_port"])
             self.assertIsNone(info["poll_ms"])
 
+    def test_joystick_nodes(self):
+        with tempfile.TemporaryDirectory() as root:
+            node = os.path.join(root, "class", "input", "input30")
+            for child in ("event20", "js2", "capabilities"):
+                os.makedirs(os.path.join(node, child))
+            self.assertEqual(sysfs.joystick_nodes("input30", root), ["js2"])
+            self.assertEqual(sysfs.joystick_nodes("input31", root), [])
+
     def test_jspoll(self):
         with tempfile.TemporaryDirectory() as root:
             self.assertIsNone(sysfs.usbhid_jspoll(root))

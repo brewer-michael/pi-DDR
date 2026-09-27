@@ -1,10 +1,20 @@
 import unittest
 
 from piddr import evcodes
-from piddr.mapping import VIRTUAL_BUTTONS, Mapper, Source, format_source, parse_source, parse_sources
+from piddr.mapping import (
+    CONTROLS,
+    PLAYER_BUTTONS,
+    STAGE_BUTTONS,
+    Mapper,
+    Source,
+    format_source,
+    game_button,
+    parse_source,
+    parse_sources,
+)
 
 KEY, ABS = evcodes.EV_KEY, evcodes.EV_ABS
-LEFT, DOWN, UP, RIGHT = (VIRTUAL_BUTTONS[c] for c in ("left", "down", "up", "right"))
+LEFT, DOWN, UP, RIGHT = (PLAYER_BUTTONS[1][c] for c in ("left", "down", "up", "right"))
 HAT0X, HAT0Y = 0x10, 0x11
 
 
@@ -151,9 +161,40 @@ class MapperTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Mapper({"jump": parse_sources("BTN_TRIGGER")})
 
-    def test_virtual_buttons_are_joystick_buttons_1_to_11(self):
-        self.assertEqual(VIRTUAL_BUTTONS["left"], 0x120)
-        self.assertEqual(VIRTUAL_BUTTONS["select"], 0x12A)
+    def test_player_two_uses_its_own_buttons(self):
+        m = Mapper({"left": parse_sources("BTN_TRIGGER")}, player=2)
+        m.feed(KEY, 0x120, 1)
+        self.assertEqual(m.flush(0.0), [(PLAYER_BUTTONS[2]["left"], 1)])
+
+
+def joydev_button_order(codes):
+    """How the kernel's joydev (and SDL's evdev backend) number a device's
+    buttons: codes from BTN_JOYSTICK up to KEY_MAX first, then BTN_MISC and up."""
+    codes = sorted(codes)
+    return [c for c in codes if c >= evcodes.BTN_JOYSTICK] + [c for c in codes if c < evcodes.BTN_JOYSTICK]
+
+
+class StageLayoutTest(unittest.TestCase):
+    def test_codes(self):
+        self.assertEqual(PLAYER_BUTTONS[1]["left"], 0x120)
+        self.assertEqual(PLAYER_BUTTONS[1]["select"], 0x12A)
+        self.assertEqual(PLAYER_BUTTONS[2]["left"], 0x2C0)  # BTN_TRIGGER_HAPPY1
+        self.assertEqual(PLAYER_BUTTONS[2]["select"], 0x2CA)
+        self.assertEqual(len(set(STAGE_BUTTONS)), 2 * len(CONTROLS))
+
+    def test_game_button_numbers_match_the_kernel_order(self):
+        order = joydev_button_order(STAGE_BUTTONS)
+        for player, buttons in PLAYER_BUTTONS.items():
+            for control, code in buttons.items():
+                self.assertEqual(game_button(player, control), order.index(code) + 1, (player, control))
+        self.assertEqual(game_button(1, "left"), 1)
+        self.assertEqual(game_button(1, "select"), 11)
+        self.assertEqual(game_button(2, "left"), 12)
+        self.assertEqual(game_button(2, "select"), 22)
+
+    def test_no_gamepad_codes(self):
+        # BTN_GAMEPAD (0x130-0x13f) would invite SDL's automatic gamepad layouts.
+        self.assertFalse([c for c in STAGE_BUTTONS if 0x130 <= c < 0x140])
 
 
 if __name__ == "__main__":
