@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="400" viewBox="0 0 860 400" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#222">
+  <title>pi-DDR stage, plywood cut layout</title>
+  <defs>
+    <pattern id="waste" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#f4f4f4"/>
+      <path d="M0,8 L8,0" stroke="#cfcfcf" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="860" height="400" fill="#fff"/>
+
+  <!-- Sheet A: 3/4 in plywood, 96 x 48 in at 5 px/in -->
+  <text x="40" y="34" font-size="14" font-weight="bold">Sheet A: 3/4 in plywood, 4 x 8 ft (bases)</text>
+  <rect x="40" y="50" width="480" height="240" fill="url(#waste)" stroke="#7a5c2e" stroke-width="1.5"/>
+  <rect x="40" y="50" width="195" height="229" fill="#e3cc9f" stroke="#7a5c2e"/>
+  <rect x="236" y="50" width="195" height="229" fill="#e3cc9f" stroke="#7a5c2e"/>
+  <text x="137" y="160" text-anchor="middle" font-size="13" font-weight="bold">Base P1</text>
+  <text x="137" y="178" text-anchor="middle">39 x 45-7/8 in</text>
+  <text x="333" y="160" text-anchor="middle" font-size="13" font-weight="bold">Base P2</text>
+  <text x="333" y="178" text-anchor="middle">39 x 45-7/8 in</text>
+  <text x="476" y="160" text-anchor="middle" fill="#666">offcut</text>
+  <text x="476" y="176" text-anchor="middle" fill="#666">~17 x 48</text>
+  <text x="235" y="289" text-anchor="middle" fill="#666" font-size="10">offcut ~2 in strip</text>
+  <text x="280" y="312" text-anchor="middle" fill="#444">1. Rip to 45-7/8 in wide.  2. Crosscut at 39 in, twice.</text>
+
+  <!-- Sheet B: 1/2 in plywood, 48 x 48 in at 5 px/in -->
+  <text x="580" y="34" font-size="14" font-weight="bold">Sheet B: 1/2 in plywood, 4 x 4 ft (borders)</text>
+  <rect x="580" y="50" width="240" height="240" fill="url(#waste)" stroke="#7a5c2e" stroke-width="1.5"/>
+  <g stroke="#7a5c2e" fill="#e3cc9f">
+    <rect x="580" y="50" width="195" height="15"/>
+    <rect x="580" y="66" width="195" height="15"/>
+    <rect x="580" y="82" width="184" height="15"/>
+    <rect x="580" y="98" width="184" height="15"/>
+    <rect x="580" y="114" width="184" height="15"/>
+    <rect x="580" y="130" width="184" height="15"/>
+    <rect x="580" y="146" width="195" height="30"/>
+    <rect x="580" y="177" width="195" height="30"/>
+  </g>
+  <g font-size="10.5">
+    <text x="586" y="61">Front P1: 39 x 3</text>
+    <text x="586" y="77">Front P2: 39 x 3</text>
+    <text x="586" y="93">Side: 36-7/8 x 3</text>
+    <text x="586" y="109">Side: 36-7/8 x 3</text>
+    <text x="586" y="125">Side: 36-7/8 x 3</text>
+    <text x="586" y="141">Side: 36-7/8 x 3</text>
+    <text x="586" y="165">Rear P1: 39 x 6</text>
+    <text x="586" y="196">Rear P2: 39 x 6</text>
+  </g>
+  <text x="700" y="252" text-anchor="middle" fill="#666">offcut ~17 x 48</text>
+  <text x="700" y="312" text-anchor="middle" fill="#444">1. Rip six 3 in and two 6 in strips.</text>
+  <text x="700" y="328" text-anchor="middle" fill="#444">2. Crosscut to the lengths shown.</text>
+
+  <text x="40" y="362" fill="#555">All sizes in inches, for the reference mat (32-3/4 x 36-5/8 in). Recompute with the formulas in the plans</text>
+  <text x="40" y="378" fill="#555">for your mat, then lay out again. Allow 1/8 in per saw cut. A home-center panel saw can make the long rips for you.</text>
+</svg>

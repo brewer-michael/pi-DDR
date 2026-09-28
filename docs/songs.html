@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Songs · pi-DDR</title>
+<meta name="description" content="Getting new songs for pi-DDR: how OutFox song packs are organised, where to find songs you can use, and how to copy them onto the Raspberry Pi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Barlow+Condensed:ital,wght@1,700;1,800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path class="mark-red" d="M16 2 22.5 9.5h-13z"/>
+        <path class="mark-red" d="M16 30 22.5 22.5h-13z"/>
+        <path class="mark-blue" d="M2 16 9.5 9.5v13z"/>
+        <path class="mark-blue" d="M30 16 22.5 9.5v13z"/>
+      </svg>
+      pi-DDR
+    </a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="build.html">Build</a>
+      <a href="play.html">Play</a>
+      <a href="songs.html" aria-current="page">Songs</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Songs</p>
+      <h1>Getting new songs</h1>
+      <p class="lede">OutFox plays StepMania-style song packs. Here's how they're organised, where
+        to find songs you're allowed to use, and how to get them onto the Pi.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>How songs are packaged</h2>
+      <p>A song is a folder holding a chart file (<code>.ssc</code> or <code>.sm</code>), the
+        music (usually <code>.ogg</code> or <code>.mp3</code>) and, most of the time, a banner
+        and a background image. Songs come in groups, usually called packs. On the Pi they go in
+        OutFox's user folder:</p>
+<pre><code>~/.project-outfox/Songs/
+└── Club Fantastic Season 1/        a group (pack)
+    └── COOL_EXCEPTION/             a song
+        ├── COOL_EXCEPTION.ssc      the charts
+        ├── COOL_EXCEPTION.ogg      the music
+        ├── COOL_EXCEPTION-bg.png   background
+        └── COOL_EXCEPTION-bn.png   banner</code></pre>
+      <p>The <code>Songs</code> folder next to the OutFox program works too. OutFox also reads
+        DWI, SMA, BMS, DTX, .chart and KSF files, but dance charts nearly always come as
+        <code>.ssc</code> or <code>.sm</code>.</p>
+      <div class="note">
+        <span class="note-label">Keep the two levels</span>
+        <p>Every song must sit inside a group folder. A song folder placed straight in
+          <code>Songs</code> makes OutFox stop loading and point it out, and a group buried one
+          folder too deep (a common result of unzipping) doesn't show up at all.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Where to find songs</h2>
+      <h3>OutFox Serenity</h3>
+      <p>The OutFox team's own packs of freely redistributable music, with charts for dance and
+        other game types. A few may already be bundled with the game.
+        <a href="https://projectoutfox.com/outfox-serenity">projectoutfox.com/outfox-serenity</a></p>
+      <h3>Club Fantastic</h3>
+      <p>Free seasons of original music made by the StepMania and In The Groove community, charted
+        for dance. It's the example pack in OutFox's own getting-started guide.</p>
+      <h3>Community archives</h3>
+      <p>Sites such as StepMania Online and Zenius -I- vanisher host thousands of packs. Many of them
+        use music ripped from commercial games, so check what you're allowed to download where you
+        live.</p>
+      <h3>Your own music</h3>
+      <p>OutFox has a built-in chart editor, so you can chart songs you own. While you're
+        charting, turn FastLoad off so the game notices your changes: stop the game over SSH with
+        <code>sudo systemctl stop getty@tty1</code>, set <code>FastLoad=0</code> in
+        <code>~/.project-outfox/Save/Preferences.ini</code>, and reboot.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Copy songs onto the Pi</h2>
+      <p>Unzip the pack first. The folder you copy is the group folder, the one that contains the
+        song folders.</p>
+      <h3>From another computer</h3>
+      <p>Over the network, with the user name and host name you set in Raspberry Pi Imager
+        (here <code>player</code> and <code>pi-ddr</code>):</p>
+<pre><code>ssh player@pi-ddr.local mkdir -p .project-outfox/Songs
+scp -r "Club Fantastic Season 1" player@pi-ddr.local:.project-outfox/Songs/</code></pre>
+      <h3>From a USB stick</h3>
+      <p>Raspberry Pi OS Lite doesn't mount sticks by itself. Over SSH, with the stick plugged
+        into the Pi:</p>
+<pre><code>sudo mount /dev/sda1 /mnt
+mkdir -p ~/.project-outfox/Songs
+cp -r "/mnt/Club Fantastic Season 1" ~/.project-outfox/Songs/
+sudo umount /mnt</code></pre>
+      <h3>Then reload</h3>
+      <p>Quit OutFox from its menu. The pi-DDR setup starts it again straight away, and it picks up
+        the new songs. If a song still doesn't appear, delete <code>~/.project-outfox/Cache</code>
+        and quit again. The next start rescans every song, which takes a while with a big library.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Worth keeping an eye on</h2>
+      <ul>
+        <li><strong>Space.</strong> Packs with background videos are big. <code>df -h ~</code>
+          shows how much room is left on the card.</li>
+        <li><strong>Background videos.</strong> If a song with a video stutters, turn song
+          backgrounds off in OutFox's options, or drop the game's resolution to 1280 × 720.</li>
+        <li><strong>Whole packs off sync.</strong> If every song in one pack feels early or late
+          by the same amount, the pack was synced differently. Packs made for In The Groove
+          machines are often about 9 ms off from others. Fix those songs' offsets with
+          <kbd>F11</kbd>/<kbd>F12</kbd>, not the Global Offset.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>Song folder layout and formats are from OutFox's own guide; nothing here has been tried on
+      the Pi yet. Corrections are welcome on <a href="https://github.com/brewer-michael/pi-DDR">GitHub</a>.</p>
+    <p>Project OutFox is made by Team Rizu. pi-DDR isn't affiliated with it, or with Konami's
+      Dance Dance Revolution.</p>
+  </div>
+</footer>
+</body>
+</html>

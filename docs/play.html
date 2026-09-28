@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How to play · pi-DDR</title>
+<meta name="description" content="How to play pi-DDR: reading the arrows, how steps are judged, difficulty, two-player modes, arrow speed and the sync keys.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Barlow+Condensed:ital,wght@1,700;1,800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path class="mark-red" d="M16 2 22.5 9.5h-13z"/>
+        <path class="mark-red" d="M16 30 22.5 22.5h-13z"/>
+        <path class="mark-blue" d="M2 16 9.5 9.5v13z"/>
+        <path class="mark-blue" d="M30 16 22.5 9.5v13z"/>
+      </svg>
+      pi-DDR
+    </a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="build.html">Build</a>
+      <a href="play.html" aria-current="page">Play</a>
+      <a href="songs.html">Songs</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">How to play</p>
+      <h1>Step on the beat</h1>
+      <p class="lede">What's on the screen, how each step is judged, and how to get going,
+        whether it's your first song or your hundredth.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>Reading the screen</h2>
+      <p class="prose">Arrows scroll up the screen toward a row of outlines at the top, the step
+        zone. As each arrow reaches its outline, step on that arrow on your mat. The music tells
+        you when; the arrows tell you where.</p>
+      <figure class="diagram">
+        <svg viewBox="0 0 600 360" width="600" height="360" role="img" aria-labelledby="screen-title">
+          <title id="screen-title">A playfield with four lanes. Outlines at the top mark the step zone. Below them rise a tap, a jump of two arrows, a freeze arrow with a long tail, a roll with a zigzag tail, and a mine.</title>
+          <defs>
+            <path id="ar" d="M0,-19.5 L19.5,0 L9,0 L9,19.5 L-9,19.5 L-9,0 L-19.5,0 z"/>
+            <marker id="up-head" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path class="d-arrowhead" d="M0,0 L10,5 L0,10 z"/>
+            </marker>
+          </defs>
+          <rect class="d-panel" x="0" y="0" width="256" height="360" rx="10"/>
+          <!-- step zone -->
+          <use href="#ar" class="d-recep" transform="translate(45 48) rotate(-90)"/>
+          <use href="#ar" class="d-recep" transform="translate(100 48) rotate(180)"/>
+          <use href="#ar" class="d-recep" transform="translate(155 48)"/>
+          <use href="#ar" class="d-recep" transform="translate(210 48) rotate(90)"/>
+          <!-- freeze arrow and roll tails, under their heads -->
+          <rect class="d-hold" x="88" y="215" width="24" height="90" rx="6"/>
+          <polyline class="d-roll" points="155,262 146,275 164,288 146,301 164,314 146,327 155,340"/>
+          <!-- notes -->
+          <use href="#ar" class="d-red" transform="translate(45 105) rotate(-90)"/>
+          <use href="#ar" class="d-red" transform="translate(45 160) rotate(-90)"/>
+          <use href="#ar" class="d-red" transform="translate(210 160) rotate(90)"/>
+          <use href="#ar" class="d-blue" transform="translate(100 215) rotate(180)"/>
+          <use href="#ar" class="d-yellow" transform="translate(155 262)"/>
+          <circle class="d-mine-ring" cx="210" cy="318" r="14"/>
+          <circle class="d-mine-core" cx="210" cy="318" r="6"/>
+          <!-- scroll direction -->
+          <line class="d-line" x1="276" y1="340" x2="276" y2="30" marker-end="url(#up-head)"/>
+          <!-- labels -->
+          <g class="d-line" stroke-dasharray="2 4">
+            <line x1="68" y1="105" x2="292" y2="105"/>
+            <line x1="233" y1="160" x2="292" y2="160"/>
+            <line x1="123" y1="215" x2="292" y2="215"/>
+            <line x1="178" y1="262" x2="292" y2="262"/>
+            <line x1="228" y1="318" x2="292" y2="318"/>
+          </g>
+          <text class="d-text" x="300" y="44"><tspan font-weight="700">Step zone</tspan></text>
+          <text class="d-small" x="300" y="62">step as an arrow meets its outline</text>
+          <text class="d-text" x="300" y="110"><tspan font-weight="700">Tap</tspan>: one step</text>
+          <text class="d-text" x="300" y="165"><tspan font-weight="700">Jump</tspan>: both at once</text>
+          <text class="d-text" x="300" y="220"><tspan font-weight="700">Freeze arrow</tspan>: hold to the tail's end</text>
+          <text class="d-text" x="300" y="267"><tspan font-weight="700">Roll</tspan>: keep tapping to the end</text>
+          <text class="d-text" x="300" y="323"><tspan font-weight="700">Mine</tspan>: don't step on it</text>
+        </svg>
+        <figcaption>Arrows rise toward the step zone. Colours depend on the noteskin; in many,
+          red arrows fall on the beat and blue ones halfway between beats.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>How steps are judged</h2>
+      <p class="prose">Every step is judged by how far it lands from the beat. The closer it is,
+        the better the judgment; outside every window it's a miss. Good steps in a row build your
+        combo, and misses drain your life bar.</p>
+      <figure class="diagram">
+        <svg viewBox="0 0 640 140" width="640" height="140" role="img" aria-labelledby="win-title">
+          <title id="win-title">Timing windows drawn to scale around the beat: W1 is plus or minus 22.5 milliseconds, W2 45, W3 90, W4 135 and W5 180.</title>
+          <rect class="d-win" x="32" y="40" width="576" height="40" opacity="0.16"/>
+          <rect class="d-win" x="104" y="40" width="432" height="40" opacity="0.28"/>
+          <rect class="d-win" x="176" y="40" width="288" height="40" opacity="0.45"/>
+          <rect class="d-win" x="248" y="40" width="144" height="40" opacity="0.7"/>
+          <rect class="d-win" x="284" y="40" width="72" height="40"/>
+          <line class="d-line" x1="320" y1="34" x2="320" y2="86"/>
+          <text class="d-text" x="320" y="28" text-anchor="middle" font-weight="700">W1</text>
+          <text class="d-text" x="374" y="28" text-anchor="middle">W2</text>
+          <text class="d-text" x="428" y="28" text-anchor="middle">W3</text>
+          <text class="d-text" x="500" y="28" text-anchor="middle">W4</text>
+          <text class="d-text" x="572" y="28" text-anchor="middle">W5</text>
+          <g class="d-line">
+            <line x1="356" y1="80" x2="356" y2="88"/>
+            <line x1="392" y1="80" x2="392" y2="88"/>
+            <line x1="464" y1="80" x2="464" y2="88"/>
+            <line x1="536" y1="80" x2="536" y2="88"/>
+            <line x1="608" y1="80" x2="608" y2="88"/>
+          </g>
+          <text class="d-small" x="320" y="102" text-anchor="middle">0</text>
+          <text class="d-small" x="356" y="102" text-anchor="middle">22.5</text>
+          <text class="d-small" x="392" y="102" text-anchor="middle">45</text>
+          <text class="d-small" x="464" y="102" text-anchor="middle">90</text>
+          <text class="d-small" x="536" y="102" text-anchor="middle">135</text>
+          <text class="d-small" x="608" y="102" text-anchor="middle">180 ms</text>
+          <text class="d-small" x="32" y="126">← early</text>
+          <text class="d-small" x="608" y="126" text-anchor="end">late →</text>
+          <text class="d-small" x="320" y="126" text-anchor="middle">on the beat</text>
+        </svg>
+        <figcaption>StepMania's classic windows, which OutFox keeps as the defaults for older
+          themes: ±22.5, 45, 90, 135 and 180 ms. OutFox's own themes can use other timing
+          modes.</figcaption>
+      </figure>
+      <div class="prose">
+        <p>Themes name the windows differently. DDR-style themes say Marvelous, Perfect, Great and
+          Good; ITG-style ones say Fantastic, Excellent, Great, Decent and Way Off.</p>
+        <p>For scale: a mat read every 8 ms adds up to ±4 ms of wobble to every step, a big share of
+          the ±22.5 ms best window. That's why the Pi reads the mats every 1 ms. The game itself
+          reads them once per frame, which adds up to ±8.3 ms at 60 fps, so a steady frame rate
+          matters as much.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Your first session</h2>
+      <ol>
+        <li>Switch on the receiver and the TV, then the Pi. OutFox starts by itself.</li>
+        <li>The first time, OutFox asks which game type to play. Choose <strong>dance</strong>.</li>
+        <li>Move through the menus with the arrows on your mat. Start chooses, Back goes back.
+          Keep a USB keyboard nearby for settings and the sync keys.</li>
+        <li>Pick a song, then a difficulty. Start on Beginner or Easy.</li>
+        <li>Stand in the middle of the mat, listen for the beat, and step as each arrow meets
+          its outline.</li>
+      </ol>
+      <p>If every step seems early or late, the sync needs calibrating:
+        <a href="build.html#calibrate">build guide, step 10</a>.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Difficulty</h2>
+      <p>Most songs have several charts, from easiest to hardest: Beginner, Easy, Medium, Hard
+        and Challenge. DDR calls them Beginner, Basic, Difficult, Expert and Challenge. Each chart
+        also has a number, its rating; higher is harder.</p>
+      <p>Move up when you can clear a level without looking at your feet. Accuracy on easier
+        charts builds the timing that hard charts need.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Two players</h2>
+      <ul>
+        <li><strong>Versus:</strong> both play the same song side by side, each on their own mat
+          and at their own difficulty. P1 is always the left mat.</li>
+        <li><strong>Double:</strong> one player uses both mats as one eight-panel pad. The stage
+          puts the two bays side by side, so Double works on it too.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Arrow speed</h2>
+      <p>If arrows arrive too fast to read, or bunch up so you can't tell them apart, change the
+        scroll speed in the player options before a song. A multiplier such as 1.5x or 2x scales
+        the song's own speed. A constant speed (for example C400) keeps arrows moving at the same
+        rate even when the song changes tempo.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Technique and comfort</h2>
+      <ul>
+        <li>At first, come back to the middle of the mat between steps. As songs get faster,
+          alternate feet instead of returning each time.</li>
+        <li>Play in clean, soft-soled shoes or barefoot. Socks slip.</li>
+        <li>Keep the area around the stage clear, and keep water nearby.</li>
+        <li>The safety bar is for balance, not for hanging on.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>Sync keys</h2>
+      <p class="prose">On a keyboard plugged into the Pi, during a song:</p>
+      <div class="table-wrap prose">
+        <table>
+          <thead><tr><th>Keys</th><th>What they do</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>F6</kbd> twice</td><td>AutoSync Machine: OutFox adjusts the Global Offset from your steps for the rest of the song, then asks before saving.</td></tr>
+            <tr><td><kbd>Shift</kbd>+<kbd>F11</kbd> / <kbd>Shift</kbd>+<kbd>F12</kbd></td><td>Nudge the Global Offset, for every song (StepMania 5.1's keys).</td></tr>
+            <tr><td><kbd>F11</kbd> / <kbd>F12</kbd></td><td>Nudge this song's own offset only.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose">If every song feels off, recalibrate the Global Offset. If only one pack
+        does, fix those songs' offsets and leave the global one alone.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>Next: <a href="songs.html">getting songs</a>.</p>
+    <p>Project OutFox is made by Team Rizu. pi-DDR isn't affiliated with it, or with Konami's
+      Dance Dance Revolution.</p>
+  </div>
+</footer>
+</body>
+</html>

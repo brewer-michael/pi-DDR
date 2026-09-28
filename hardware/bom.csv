@@ -1,0 +1,30 @@
+section,item,qty,unit_usd,total_usd,need,notes
+Game computer,"Raspberry Pi 4 Model B, 2 GB or more",1,55,55,required (skip if owned),"2 GB $55; 3 GB $83.75; 4 GB about $100 after the 2026 memory-price increases. 3-4 GB suits big song libraries."
+Game computer,"Official Raspberry Pi 15 W USB-C power supply (5.1 V, 3 A)",1,8,8,required,Weak supplies cause throttling and USB dropouts
+Game computer,"microSD card, 64 GB, A2 / U3",1,12,12,required,Song packs are large; A2 cards load them faster
+Game computer,Case with heatsink or fan,1,15,15,required,The Pi 4 throttles near 80 C and drops frames
+Game computer,"Micro-HDMI to HDMI cable, 2 m",1,8,8,required,Pi HDMI0 (next to USB-C) to the receiver's HDMI input
+Game computer,USB keyboard,1,15,15,required (can borrow),"Setup, and the F-key hotkeys during sync calibration"
+Game computer,"USB 2.0 extension cable, A male to A female, 3 m (10 ft)",2,8,16,if the Pi is away from the stage,Keep mat cable + extension under 5 m (16 ft); beyond that use an active extension
+Game computer,"Floor cable cover, about 6 ft",1,15,15,recommended,Covers the mat cables between stage and Pi
+Dance mats,"USB dance mat, PC version, identical pair (e.g. OSTENT USB non-slip, 93 x 83 cm)",2,30,60,required,Test on day one with matprobe: HID type Joystick; LEFT+RIGHT jumps register; no chatter
+Platform,"3/4 in (18 mm) sanded plywood, 4 x 8 ft",1,60,60,required,Both bases
+Platform,"1/2 in (12 mm) sanded plywood, 4 x 4 ft",1,30,30,required,Borders; thickness = mat + underlay (see the table in the plans)
+Platform,"Wood glue (Titebond II), 8 oz",1,6,6,required,
+Platform,"#8 x 1 in flat-head wood screws, box of 100",1,8,8,required,Length depends on border thickness (table in the plans)
+Platform,"Non-slip rug pad, 4 x 6 ft, about 1/8 in",1,20,20,required,Cut into the two mat underlays
+Platform,"Rubber-backed rug pad, 5 x 8 ft",1,30,30,required,Under the whole stage: grip and stomp-noise damping
+Platform,"Floor and porch paint, 1 qt, plus anti-skid additive",1,25,25,recommended,Or water-based polyurethane plus clear anti-slip tape
+Platform,"Wood filler and sandpaper (120, 180 grit)",1,12,12,required,
+Platform,"Flat mending plate, 4 in, with screws",2,3,6,recommended,Joins the two modules
+Platform,"Adhesive cable clips, pack",1,6,6,recommended,Strain relief for the mat cables
+Platform,"Double-sided carpet tape",1,8,8,optional,Only if a mat still shifts in its bay
+Safety bars,"3/4 in black iron floor flange",4,9,36,optional,Two per module
+Safety bars,"3/4 x 30 in black iron pipe",6,13,78,optional,Per module: two uprights and one bar
+Safety bars,"3/4 in black iron 90-degree elbow",4,4,16,optional,
+Safety bars,"1/4-20 x 2 in flat-head machine screw, washer, nylon lock nut",16,0.75,12,optional,Countersunk from underneath
+Safety bars,"Grip tape or foam grips",2,8,16,optional,
+Audio/video,TV with HDMI input and Game Mode,1,0,0,already owned,
+Audio/video,"5.1 AV receiver with HDMI input and HDMI output",1,0,0,already owned,Pi -> receiver -> TV; receiver upmixes stereo to 5.1
+Audio/video,"HDMI cable, receiver to TV",1,0,0,already owned,
+Audio/video,"USB audio adapter with optical (TOSLINK) output",1,20,20,only if the receiver has no HDMI input,Then run a separate HDMI cable from the Pi to the TV
