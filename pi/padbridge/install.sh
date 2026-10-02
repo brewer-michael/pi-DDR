@@ -39,7 +39,9 @@ if [ "${1:-}" = "--uninstall" ]; then
 fi
 
 if ! python3 -c 'import evdev' 2>/dev/null; then
-    apt-get install -y python3-evdev
+    echo "python3-evdev isn't installed. Run the installer, which installs it:" >&2
+    echo "  sudo sh $PI_DIR/install.sh" >&2
+    exit 1
 fi
 
 mkdir -p "$PREFIX" "$CONF_DIR"
@@ -52,10 +54,14 @@ echo "Installed code in $PREFIX."
 
 if [ ! -f "$CONF" ]; then
     systemctl stop pi-ddr-padbridge.service 2>/dev/null || true
-    echo
-    echo "No $CONF yet. With both mats plugged into their P1/P2 ports, run:"
-    echo "  sudo PYTHONPATH=$PREFIX python3 -m piddr.matprobe learn --out $CONF"
-    echo "then run the installer again: sudo sh $PI_DIR/install.sh"
+    if [ -n "${PIDDR_INSTALLER:-}" ]; then
+        echo "Mats not mapped yet; see the summary at the end."
+    else
+        echo
+        echo "No $CONF yet. With both mats plugged into their P1/P2 ports, run:"
+        echo "  sudo PYTHONPATH=$PREFIX python3 -m piddr.matprobe learn --out $CONF"
+        echo "then run the installer again: sudo sh $PI_DIR/install.sh"
+    fi
     exit 0
 fi
 

@@ -310,16 +310,21 @@ go, and it is safe to run again.
    under `~/ProjectOutFox/`. (Pi-Apps can install it too, but it may offer an
    older build.)
 4. **Run the installer:** `sudo sh ~/pi-DDR/pi/install.sh`. It:
-   - installs the packages (a bare X server for the game, the libraries OutFox
-     needs, python3-evdev, ALSA tools);
+   - installs every package it needs in one go (a bare X server for the game,
+     the libraries OutFox needs, python3-evdev, ALSA tools, Samba);
    - applies the system settings (1 ms mat polling, full CPU clock, audio thread
      priority, HDMI pinned to 1080p60; set `PIDDR_VIDEO=1280x720@60` to change it);
    - installs the pad bridge;
-   - shares the song folder on the home network as `\\pi-ddr.local\Songs`
-     (Samba). The first run asks for the password other computers use to open
-     it; `sudo smbpasswd -a <user>` changes it later;
    - merges the OutFox preferences;
-   - sets the Pi to boot straight into OutFox on the console.
+   - sets the Pi to boot straight into OutFox on the console;
+   - shares the song folder on the home network as `\\pi-ddr.local\Songs`
+     (Samba). The first run ends by asking for the password other computers use
+     to open it; `sudo smbpasswd -a <user>` changes it later;
+   - finishes with a summary: whether OutFox can start (it lists any missing
+     libraries), whether the mats are mapped, and the share's address.
+
+   If a step fails, it says which one stopped the run; fix the error and run it
+   again.
 5. **Map the mats**, each plugged into its labelled port:
    ```sh
    cd ~/pi-DDR/pi

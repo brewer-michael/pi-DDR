@@ -1,6 +1,7 @@
 #!/bin/sh
 # Share OutFox's song folder on the home network (SMB), so song packs can be
-# dragged onto the Pi from another computer. pi/install.sh runs this for you.
+# dragged onto the Pi from another computer. pi/install.sh installs Samba and
+# runs this for you.
 #
 #   sudo sh pi/setup/songs-share.sh
 #
@@ -26,8 +27,9 @@ SMB_CONF=/etc/samba/smb.conf
 DROP_IN=/etc/systemd/system/smbd.service.d/pi-ddr.conf
 
 if ! command -v smbd >/dev/null 2>&1; then
-    # samba-common asks a debconf question about WINS; take its default.
-    DEBIAN_FRONTEND=noninteractive apt-get install -y samba
+    echo "Samba isn't installed. Run the installer, which installs it:" >&2
+    echo "  sudo sh $(cd "$(dirname "$0")/.." && pwd)/install.sh" >&2
+    exit 1
 fi
 
 sudo -u "$PLAYER" mkdir -p "$SONGS"
@@ -76,13 +78,22 @@ systemctl enable smbd.service >/dev/null 2>&1
 systemctl restart smbd.service
 echo "  smbd running at nice 10"
 
+# smbpasswd -a can fail (the two entries don't match), so check Samba's user
+# database afterwards rather than trusting it, and ask again.
 if pdbedit -L -u "$PLAYER" >/dev/null 2>&1; then
     echo "  $PLAYER already has a Samba password"
 elif [ -t 0 ]; then
     echo "  Choose the password other computers will use to open the share (user $PLAYER):"
-    if ! smbpasswd -a "$PLAYER"; then
-        echo "  Not set. Set it later with: sudo smbpasswd -a $PLAYER" >&2
-    fi
+    tries=0
+    until pdbedit -L -u "$PLAYER" >/dev/null 2>&1; do
+        if [ "$tries" -ge 3 ]; then
+            echo "  No Samba password set for $PLAYER. Set one with: sudo smbpasswd -a $PLAYER" >&2
+            exit 1
+        fi
+        tries=$((tries + 1))
+        smbpasswd -a "$PLAYER" || echo "  Not set; try again." >&2
+    done
+    echo "  Samba password set for $PLAYER"
 else
     echo "  No Samba password yet. Set one with: sudo smbpasswd -a $PLAYER"
 fi

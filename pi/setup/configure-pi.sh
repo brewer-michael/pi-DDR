@@ -148,10 +148,12 @@ if [ -n "$target_user" ] && [ "$target_user" != root ]; then
     fi
 fi
 
-say ""
+# Run by pi/install.sh, its summary says what comes next.
 if [ "$DRY_RUN" = 1 ]; then
+    say ""
     say "Dry run: nothing was changed."
-else
+elif [ -z "${PIDDR_INSTALLER:-}" ]; then
+    say ""
     say "Done. Reboot, then check the mats with:"
     say "  cd pi && sudo python3 -m piddr.matprobe list"
 fi

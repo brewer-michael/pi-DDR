@@ -50,7 +50,7 @@ This is a DIY home dance-game (DDR-style) setup:
 - `docs/*.html` + `docs/site.css`: the project website (home, build guide, how to play, songs). Plain HTML and CSS with no build step and no scripts; GitHub Pages serves `/docs`, and `docs/.nojekyll` stops it running Jekyll. Pages link to the markdown docs on GitHub (`blob/main`).
 - `hardware/pi-case/`: 3D-printed Pi 4 cases, parametric OpenSCAD. `karaoke-column.scad` mounts on the stage's front border (keyholes, all cables out of the back); `karaoke-case.scad` is the simple free-standing version, kept on purpose. In both, `part="check_fit"`/`"check_slide"` must render empty after any change. The user's cooler is 16 mm tall (flush with the USB ports).
 - `hardware/bom.csv`: machine-readable BOM. **Keep it in sync with `docs/bill-of-materials.md`** (items, quantities, prices).
-- `pi/install.sh`: the one installer for the Pi (packages, system tuning, pad bridge, OutFox prefs, boot into the game). Safe to re-run; it calls the scripts below.
+- `pi/install.sh`: the one installer for the Pi (packages, system tuning, pad bridge, OutFox prefs, boot into the game, song share, summary). Safe to re-run; it calls the scripts below. All packages are installed in its first step, in one apt run; the scripts it calls don't run apt.
 - `pi/piddr/`: Python package, run on the Pi (needs python3-evdev). `evcodes` wraps `evdev.ecodes`; `mapping`, `timing`, `sysfs`, `config` hold the logic; `matprobe` and `padbridge` are the CLIs.
 - `pi/tests/`: unittest suite; the bridge is tested with fake evdev objects.
 - `pi/padbridge/`: systemd unit, bridge installer, example config.
