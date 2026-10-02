@@ -33,9 +33,13 @@ step() { printf '\n== %s\n' "$*"; }
 
 step "Packages"
 apt-get update
+# The last four are libraries the OutFox binary links against (ldd shows them
+# missing on a fresh Pi OS Lite). libpulse0 and libjack-jackd2-0 are client
+# libraries only: no PulseAudio or JACK server gets installed.
 apt-get install -y --no-install-recommends \
     xserver-xorg xinit x11-xserver-utils libgl1-mesa-dri \
-    python3-evdev alsa-utils
+    python3-evdev alsa-utils \
+    libgl1 libfreetype6 libpulse0 libjack-jackd2-0
 
 step "System settings"
 sh "$HERE/setup/configure-pi.sh" --video "$VIDEO"

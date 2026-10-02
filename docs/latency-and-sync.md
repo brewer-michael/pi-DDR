@@ -310,7 +310,8 @@ go, and it is safe to run again.
    under `~/ProjectOutFox/`. (Pi-Apps can install it too, but it may offer an
    older build.)
 4. **Run the installer:** `sudo sh ~/pi-DDR/pi/install.sh`. It:
-   - installs the packages (a bare X server for the game, python3-evdev, ALSA tools);
+   - installs the packages (a bare X server for the game, the libraries OutFox
+     needs, python3-evdev, ALSA tools);
    - applies the system settings (1 ms mat polling, full CPU clock, audio thread
      priority, HDMI pinned to 1080p60; set `PIDDR_VIDEO=1280x720@60` to change it);
    - installs the pad bridge;
