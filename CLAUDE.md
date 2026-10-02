@@ -48,6 +48,7 @@ This is a DIY home dance-game (DDR-style) setup:
 
 - `docs/`: `bill-of-materials.md`, `platform-plans.md`, `latency-and-sync.md` (includes the Pi setup runbook). Drawings are SVGs written as plain text in `docs/img/`. `assembled.svg` is a 3D view of the whole setup; its header comment gives the projection, so its faces can be edited in inches.
 - `docs/*.html` + `docs/site.css`: the project website (home, build guide, how to play, songs). Plain HTML and CSS with no build step and no scripts; GitHub Pages serves `/docs`, and `docs/.nojekyll` stops it running Jekyll. Pages link to the markdown docs on GitHub (`blob/main`).
+- `hardware/pi-case/`: 3D-printed Pi 4 cases, parametric OpenSCAD. `karaoke-column.scad` mounts on the stage's front border (keyholes, all cables out of the back); `karaoke-case.scad` is the simple free-standing version, kept on purpose. In both, `part="check_fit"`/`"check_slide"` must render empty after any change. The user's cooler is 16 mm tall (flush with the USB ports).
 - `hardware/bom.csv`: machine-readable BOM. **Keep it in sync with `docs/bill-of-materials.md`** (items, quantities, prices).
 - `pi/install.sh`: the one installer for the Pi (packages, system tuning, pad bridge, OutFox prefs, boot into the game). Safe to re-run; it calls the scripts below.
 - `pi/piddr/`: Python package, run on the Pi (needs python3-evdev). `evcodes` wraps `evdev.ecodes`; `mapping`, `timing`, `sysfs`, `config` hold the logic; `matprobe` and `padbridge` are the CLIs.
@@ -84,4 +85,5 @@ This is a DIY home dance-game (DDR-style) setup:
 - OutFox holds a steady 60 fps on the Pi 4 at 1080p, and whether 120 Hz works with the TV.
 - The udev rule actually hides the raw mats from the game user (`MODE:="0600"`, `GROUP:="root"`, `TAG-="uaccess"` and `ENV{ID_INPUT_JOYSTICK}=""` at priority 65, surviving 99-com.rules).
 - The song share: Windows reaches `\\pi-ddr.local\Songs` and signs in, copied packs show up in OutFox after a restart, and a copy during a song doesn't cause stutter.
+- The karaoke column case (`hardware/pi-case/karaoke-column.scad`): printed and the Pi mounts in it; the keyhole mounting on the border, the HDMI/USB-C cradles and zip-tie routing, and temperatures under load are untested.
 - The chosen mats report HID usage Joystick and can register LEFT+RIGHT jumps.

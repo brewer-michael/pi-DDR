@@ -2,7 +2,7 @@ section,item,qty,unit_usd,total_usd,need,notes
 Game computer,"Raspberry Pi 4 Model B, 2 GB or more",1,55,55,required (skip if owned),"2 GB $55; 3 GB $83.75; 4 GB about $100 after the 2026 memory-price increases. 3-4 GB suits big song libraries."
 Game computer,"Official Raspberry Pi 15 W USB-C power supply (5.1 V, 3 A)",1,8,8,required,Weak supplies cause throttling and USB dropouts
 Game computer,"microSD card, 64 GB, A2 / U3",1,12,12,required,Song packs are large; A2 cards load them faster
-Game computer,Case with heatsink or fan,1,15,15,required,The Pi 4 throttles near 80 C and drops frames
+Game computer,Case with heatsink or fan,1,15,15,required,The Pi 4 throttles near 80 C and drops frames. Or print a hardware/pi-case design (50-80 g of filament) around a heatsink with its own fan; the column version mounts on the stage
 Game computer,"Micro-HDMI to HDMI cable, 2 m",1,8,8,required,Pi HDMI0 (next to USB-C) to the receiver's HDMI input
 Game computer,USB keyboard,1,15,15,required (can borrow),"Setup, and the F-key hotkeys during sync calibration"
 Game computer,"USB 2.0 extension cable, A male to A female, 3 m (10 ft)",2,8,16,if the Pi is away from the stage,Keep mat cable + extension under 5 m (16 ft); beyond that use an active extension

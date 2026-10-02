@@ -22,6 +22,7 @@ A home DDR-style dance game for two players:
 | [Bill of materials](docs/bill-of-materials.md) | Everything to buy, with rough 2026 prices (about $405–480 for the core build). CSV copy: [`hardware/bom.csv`](hardware/bom.csv). |
 | [Platform plans](docs/platform-plans.md) | The two-module stage that holds the mats: dimensions, formulas for your mat size, cut list, drawings, build steps, optional safety bars. |
 | [Latency and sync](docs/latency-and-sync.md) | How the game, the mats and the audio stay in sync, what to configure, how to calibrate, and troubleshooting. Includes the full Pi setup, in order. |
+| [Pi cases](hardware/pi-case/) | 3D-printed cases shaped like little karaoke speakers, for a Pi 4 with a heatsink and fan: a column that mounts on the stage's front border with all cables out of the back, and a simpler free-standing one. |
 | [Website](docs/index.html) | A friendlier tour in four pages: the project, a step-by-step build guide, how to play, and getting songs. |
 
 The website is plain HTML in `docs/`, so GitHub Pages can serve it: in the

@@ -27,7 +27,7 @@ memory got more expensive.
 | 1 | Raspberry Pi 4 Model B, 2 GB or more | $55–100 | The decided platform. 2 GB ($55) runs OutFox; 3 GB ($83.75) or 4 GB (about $100) gives headroom for big song libraries and background videos. |
 | 1 | Official Raspberry Pi 15 W USB-C power supply (5.1 V 3 A) | $8 | Weak phone chargers cause under-voltage throttling and USB dropouts: stutter and lost steps. |
 | 1 | microSD card, 64 GB, A2 / U3 rated | $12 | Song packs are big; A2 cards load them noticeably faster. |
-| 1 | Case with a heatsink or fan | $15 | The Pi 4 slows itself down near 80 °C, which shows up as dropped frames. |
+| 1 | Case with a heatsink or fan | $15 | The Pi 4 slows itself down near 80 °C, which shows up as dropped frames. Or print one of the [karaoke-speaker cases](../hardware/pi-case/) (50–80 g of filament) around a heatsink with its own fan; the column version mounts on the stage. |
 | 1 | Micro-HDMI to HDMI cable, 2 m | $8 | The Pi 4 has micro-HDMI ports. Use **HDMI0**, the one next to the USB-C power port. It goes to the receiver's HDMI input. |
 | 1 | USB keyboard | $15 | Setup, plus the F-key hotkeys during sync calibration. Borrow one if you like. |
 | 2 | USB 2.0 extension, A-male to A-female, 3 m (10 ft) | $16 | Only if the Pi sits by the TV rather than the stage. Keep each run (mat cable plus extension) under 5 m (16 ft); longer needs an *active* extension. |
