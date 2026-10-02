@@ -41,6 +41,7 @@ This is a DIY home dance-game (DDR-style) setup:
 - **OutFox input preferences:** `UseOldJoystickMapping=1`, so every button keeps its own number (XInput mode needs a gamepad layout). `AutoMapOnJoyChange=0`, which OutFox's own key-map guide recommends for custom mappings.
 - **Audio device:** OutFox `SoundDrivers=ALSA-sw`, `SoundDevice=hdmi:CARD=vc4hdmi0,DEV=0` (HDMI0 into the receiver's HDMI input; video passes through the receiver to the TV), `SoundPreferredSampleRate=48000`. No PipeWire or PulseAudio, which is why the setup uses Pi OS Lite with a bare X session (`pi/setup/xinitrc`) instead of a desktop.
 - **Mat polling:** `usbhid.jspoll=1` on the kernel command line. It only affects mats whose HID descriptor says Joystick (not Gamepad), and only when the device binds.
+- **Song share:** Samba shares `~/.project-outfox/Songs` as `\\<host>.local\Songs`, so packs can be dragged in from another computer. It signs in as the player with a Samba password (Windows 11 blocks guest shares) and forces the player as owner, so OutFox can read everything. smbd runs at nice 10 so a copy gives way to the game. It's found by name through the Pi's mDNS (`.local`), with no network browsing service.
 - **Stage:** two modules (P1 left, P2 right, facing the TV), each a 3/4 in plywood base with plywood borders as thick as the mat plus underlay, forming a bay with 1/8 in clearance. Dimensions derive from measured mat size; the formulas are in `docs/platform-plans.md`.
 
 ## Repository layout
@@ -52,14 +53,14 @@ This is a DIY home dance-game (DDR-style) setup:
 - `pi/piddr/`: Python package, run on the Pi (needs python3-evdev). `evcodes` wraps `evdev.ecodes`; `mapping`, `timing`, `sysfs`, `config` hold the logic; `matprobe` and `padbridge` are the CLIs.
 - `pi/tests/`: unittest suite; the bridge is tested with fake evdev objects.
 - `pi/padbridge/`: systemd unit, bridge installer, example config.
-- `pi/setup/`: `configure-pi.sh` (kernel cmdline, CPU governor, audio priority limits), `xinitrc`.
+- `pi/setup/`: `configure-pi.sh` (kernel cmdline, CPU governor, audio priority limits), `songs-share.sh` (Samba share of the song folder), `xinitrc`.
 - `pi/outfox/`: recommended OutFox preferences and `apply-prefs.sh`.
 
 ## Commands
 
 - Install or update on the Pi: `sudo sh pi/install.sh`
 - Tests (on the Pi, or any Linux with python3-evdev): `cd pi && python3 -m unittest discover -s tests`
-- Lint shell scripts: `shellcheck -s sh pi/install.sh pi/setup/configure-pi.sh pi/padbridge/install.sh pi/outfox/apply-prefs.sh pi/setup/xinitrc`
+- Lint shell scripts: `shellcheck -s sh pi/install.sh pi/setup/configure-pi.sh pi/setup/songs-share.sh pi/padbridge/install.sh pi/outfox/apply-prefs.sh pi/setup/xinitrc`
 - From `pi/`:
   - `sudo python3 -m piddr.matprobe list|watch|learn`
   - `python3 -m piddr.padbridge --config FILE --check|--print-udev-rules`
@@ -82,4 +83,5 @@ This is a DIY home dance-game (DDR-style) setup:
 - The pad bridge on a real Pi 4: uinput creation (the stage should get a `js` node), forwarding delay numbers.
 - OutFox holds a steady 60 fps on the Pi 4 at 1080p, and whether 120 Hz works with the TV.
 - The udev rule actually hides the raw mats from the game user (`MODE:="0600"`, `GROUP:="root"`, `TAG-="uaccess"` and `ENV{ID_INPUT_JOYSTICK}=""` at priority 65, surviving 99-com.rules).
+- The song share: Windows reaches `\\pi-ddr.local\Songs` and signs in, copied packs show up in OutFox after a restart, and a copy during a song doesn't cause stutter.
 - The chosen mats report HID usage Joystick and can register LEFT+RIGHT jumps.

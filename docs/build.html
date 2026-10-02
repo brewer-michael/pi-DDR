@@ -102,8 +102,9 @@
 git clone https://github.com/brewer-michael/pi-DDR ~/pi-DDR
 sudo sh ~/pi-DDR/pi/install.sh</code></pre>
               It installs what the game needs, sets 1 ms mat polling, full CPU speed and a
-              1080p60 picture, adds the pad bridge and the OutFox settings, and makes the Pi boot
-              straight into the game. It's safe to run again.</li>
+              1080p60 picture, adds the pad bridge and the OutFox settings, shares the song folder
+              on your network, and makes the Pi boot straight into the game. The first time, it
+              asks for a password for that share. It's safe to run again.</li>
             <li>Plug both mats in and check them:
 <pre><code>cd ~/pi-DDR/pi
 sudo python3 -m piddr.matprobe list    # HID type and polling rate

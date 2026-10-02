@@ -10,8 +10,9 @@
 #   2. applies the low-latency system settings (setup/configure-pi.sh);
 #   3. installs the pad bridge, plus its udev rule once the mats are mapped
 #      (padbridge/install.sh);
-#   4. merges the recommended OutFox preferences (outfox/apply-prefs.sh);
-#   5. makes the Pi boot straight into OutFox on the console.
+#   4. shares the song folder on the network (setup/songs-share.sh);
+#   5. merges the recommended OutFox preferences (outfox/apply-prefs.sh);
+#   6. makes the Pi boot straight into OutFox on the console.
 # It doesn't download OutFox: unpack OutFox's Raspberry Pi build under
 # ~/ProjectOutFox/ first (docs/latency-and-sync.md, "Setup, in order").
 #
@@ -41,6 +42,9 @@ sh "$HERE/setup/configure-pi.sh" --video "$VIDEO"
 
 step "Pad bridge"
 sh "$HERE/padbridge/install.sh"
+
+step "Song share"
+sh "$HERE/setup/songs-share.sh"
 
 step "OutFox preferences"
 # OutFox rewrites Preferences.ini when it exits, and the console autologin
@@ -93,4 +97,5 @@ else
     echo "          cd $HERE && sudo python3 -m piddr.matprobe learn --out /etc/pi-ddr/padbridge.conf"
     echo "          sudo sh $HERE/install.sh"
 fi
+printf 'Songs:  \\\\%s.local\\Songs (SMB, user %s)\n' "$(hostname)" "$PLAYER"
 echo "Then reboot to play: sudo reboot"

@@ -96,9 +96,21 @@
       <h2>Copy songs onto the Pi</h2>
       <p>Unzip the pack first. The folder you copy is the group folder, the one that contains the
         song folders.</p>
-      <h3>From another computer</h3>
-      <p>Over the network, with the user name and host name you set in Raspberry Pi Imager
-        (here <code>player</code> and <code>pi-ddr</code>):</p>
+      <h3>From another computer: drag and drop</h3>
+      <p>The pi-DDR installer shares the song folder on your home network. Open it with the host
+        name and user name you set in Raspberry Pi Imager (here <code>pi-ddr</code> and
+        <code>player</code>) and the share password the installer asked for:</p>
+      <ul>
+        <li><strong>Windows:</strong> type <code>\\pi-ddr.local\Songs</code> into File Explorer's
+          address bar. To keep it, right-click This PC and choose Map network drive.</li>
+        <li><strong>macOS:</strong> Finder, Go → Connect to Server,
+          <code>smb://pi-ddr.local/Songs</code>.</li>
+        <li><strong>Linux:</strong> <code>smb://pi-ddr.local/Songs</code> in the file manager.</li>
+      </ul>
+      <p>Then drag the group folder in. Copying while someone is mid-song is fine, but the game
+        has the Pi to itself if you copy between sessions. Forgot the password? Over SSH:
+        <code>sudo smbpasswd -a player</code>.</p>
+      <h3>From another computer: over SSH</h3>
 <pre><code>ssh player@pi-ddr.local mkdir -p .project-outfox/Songs
 scp -r "Club Fantastic Season 1" player@pi-ddr.local:.project-outfox/Songs/</code></pre>
       <h3>From a USB stick</h3>

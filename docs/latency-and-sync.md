@@ -314,6 +314,9 @@ go, and it is safe to run again.
    - applies the system settings (1 ms mat polling, full CPU clock, audio thread
      priority, HDMI pinned to 1080p60; set `PIDDR_VIDEO=1280x720@60` to change it);
    - installs the pad bridge;
+   - shares the song folder on the home network as `\\pi-ddr.local\Songs`
+     (Samba). The first run asks for the password other computers use to open
+     it; `sudo smbpasswd -a <user>` changes it later;
    - merges the OutFox preferences;
    - sets the Pi to boot straight into OutFox on the console.
 5. **Map the mats**, each plugged into its labelled port:
